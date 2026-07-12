@@ -137,3 +137,17 @@ def parse_param_list(raw: str) -> list[str]:
             continue
         params.append(name)
     return params
+
+
+def parse_interface_list(raw: str) -> list[str]:
+    """Parse ``ros2 interface list`` plain text into interface type names."""
+    items: list[str] = []
+    for line in (raw or "").splitlines():
+        name = line.strip()
+        if not name or name.startswith("#") or name.endswith(":"):
+            continue
+        # Skip section headers like "Messages:" / "Services:"
+        if name.lower() in {"messages", "services", "actions"}:
+            continue
+        items.append(name)
+    return items
