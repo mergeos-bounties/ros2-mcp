@@ -126,3 +126,14 @@ def parse_action_list(raw: str) -> list[dict[str, str]]:
         else:
             items.append({"name": line, "type": ""})
     return items
+
+
+def parse_param_list(raw: str) -> list[str]:
+    """Parse ``ros2 param list`` plain text into fully-qualified parameter names."""
+    params: list[str] = []
+    for line in (raw or "").splitlines():
+        name = line.strip()
+        if not name or name.startswith("#"):
+            continue
+        params.append(name)
+    return params
