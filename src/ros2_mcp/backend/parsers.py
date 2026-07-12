@@ -177,3 +177,22 @@ def parse_topic_list(raw: str) -> list[dict[str, str]]:
         else:
             items.append({"name": line, "type": ""})
     return items
+
+
+def parse_tf_frames(raw: str) -> list[str]:
+    """Parse loose ``tf2_echo`` / frame dump lines into frame ids (best-effort)."""
+    frames: list[str] = []
+    seen: set[str] = set()
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        # Common patterns: "Frame: base_link" or bare frame names
+        if line.lower().startswith("frame:"):
+            name = line.split(":", 1)[1].strip()
+        else:
+            name = line.split()[0]
+        if name and name not in seen and not name.startswith("["):
+            seen.add(name)
+            frames.append(name)
+    return frames

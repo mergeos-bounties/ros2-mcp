@@ -3,6 +3,7 @@ from ros2_mcp.backend.parsers import (
     parse_interface_list,
     parse_pkg_list,
     parse_topic_list,
+    parse_tf_frames,
     parse_node_list,
     parse_param_list,
     parse_service_list,
@@ -54,3 +55,9 @@ def test_parse_topic_list() -> None:
     assert items[0]["name"] == "/chatter"
     assert items[0]["type"] == "std_msgs/msg/String"
     assert items[1]["name"] == "/scan"
+
+
+def test_parse_tf_frames() -> None:
+    items = parse_tf_frames("Frame: base_link\nFrame: map\n# skip\n")
+    assert "base_link" in items
+    assert "map" in items
