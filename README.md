@@ -56,6 +56,44 @@ enabled = true
 
 See [examples/](examples/).
 
+## Khởi động nhanh (Tiếng Việt)
+
+```powershell
+cd D:\ThanhTrucSolutions\ros2-mcp
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -e ".[dev]"
+
+ros2-mcp demo
+ros2-mcp tools list
+ros2-mcp serve
+```
+
+### Kết nối với Grok / Cursor / Claude Desktop
+
+**Grok** (`~/.grok/config.toml`):
+
+```toml
+[mcp_servers.ros2]
+command = "ros2-mcp"
+args = ["serve"]
+enabled = true
+```
+
+**Cursor / Claude** (ví dụ file JSON):
+
+```json
+{
+  "mcpServers": {
+    "ros2": {
+      "command": "ros2-mcp",
+      "args": ["serve"],
+      "env": { "ROS2_MCP_MODE": "mock" }
+    }
+  }
+}
+```
+
 ## MCP tools
 
 | Tool | Description |
