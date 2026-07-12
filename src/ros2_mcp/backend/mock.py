@@ -289,4 +289,70 @@ class MockBackend:
             "node_names": sorted(self._nodes.keys()),
             "service_names": sorted(self._services.keys()),
             "turtle_pose": deepcopy(self._pose),
+            "actions": [a["name"] for a in self.list_actions()],
+        }
+
+    def tf_tree(self) -> dict[str, Any]:
+        """Static TF tree for mock robot (map → odom → base_link → sensors)."""
+        return {
+            "mode": "mock",
+            "root": "map",
+            "frames": [
+                {"parent": "map", "child": "odom", "xyz": [0.0, 0.0, 0.0], "rpy": [0, 0, 0]},
+                {
+                    "parent": "odom",
+                    "child": "base_link",
+                    "xyz": [self._pose["x"] - 5.5, self._pose["y"] - 5.5, 0.0],
+                    "rpy": [0, 0, self._pose["theta"]],
+                },
+                {"parent": "base_link", "child": "laser_link", "xyz": [0.1, 0.0, 0.15], "rpy": [0, 0, 0]},
+                {"parent": "base_link", "child": "imu_link", "xyz": [0.0, 0.0, 0.05], "rpy": [0, 0, 0]},
+            ],
+            "ok": True,
+        }
+
+    def list_actions(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "name": "/navigate_to_pose",
+                "type": "nav2_msgs/action/NavigateToPose",
+                "server": "/bt_navigator",
+            },
+            {
+                "name": "/follow_path",
+                "type": "nav2_msgs/action/FollowPath",
+                "server": "/controller_server",
+            },
+            {
+                "name": "/turtle1/rotate_absolute",
+                "type": "turtlesim/action/RotateAbsolute",
+                "server": "/turtlesim",
+            },
+        ]
+
+    def action_send_goal(
+        self,
+        action: str,
+        action_type: str,
+        goal: dict[str, Any],
+    ) -> dict[str, Any]:
+        known = {a["name"] for a in self.list_actions()}
+        if action not in known:
+            return {"ok": False, "error": f"unknown action {action}", "known": sorted(known)}
+        # mock: accept goal, optionally nudge pose toward target
+        if action == "/navigate_to_pose":
+            pose = goal.get("pose") or goal
+            x = float(pose.get("x", pose.get("position", {}).get("x", self._pose["x"])))
+            y = float(pose.get("y", pose.get("position", {}).get("y", self._pose["y"])))
+            self._pose["x"] = x
+            self._pose["y"] = y
+            self._push("/turtle1/pose", deepcopy(self._pose))
+            self._push("/odom", {"pose": deepcopy(self._pose)})
+        return {
+            "ok": True,
+            "action": action,
+            "type": action_type,
+            "status": "SUCCEEDED",
+            "goal": goal,
+            "result": {"success": True},
         }

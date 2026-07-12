@@ -46,6 +46,17 @@ def demo_cmd() -> None:
     svc = b.service_call("/spawn", "turtlesim/srv/Spawn", {"name": "turtle2", "x": 2.0, "y": 3.0})
     rprint({"spawn": svc})
     rprint({"graph": b.graph_summary()})
+    rprint({"tf": b.tf_tree()})
+    rprint({"actions": b.list_actions()})
+    rprint(
+        {
+            "nav_goal": b.action_send_goal(
+                "/navigate_to_pose",
+                "nav2_msgs/action/NavigateToPose",
+                {"x": 3.0, "y": 4.0},
+            )
+        }
+    )
     rprint("ros2-mcp demo complete (mock).")
 
 
@@ -82,6 +93,9 @@ def tools_list() -> None:
             "ros2_get_param",
             "ros2_set_param",
             "ros2_graph_summary",
+            "ros2_tf_tree",
+            "ros2_list_actions",
+            "ros2_action_send_goal",
         ]
     for n in names:
         table.add_row(n)
@@ -113,6 +127,13 @@ def call_cmd(
         "ros2_list_nodes": b.list_nodes,
         "ros2_list_services": b.list_services,
         "ros2_graph_summary": b.graph_summary,
+        "ros2_tf_tree": b.tf_tree,
+        "ros2_list_actions": b.list_actions,
+        "ros2_action_send_goal": lambda: b.action_send_goal(
+            str(kv.get("action", "/navigate_to_pose")),
+            str(kv.get("action_type", "nav2_msgs/action/NavigateToPose")),
+            kv.get("goal") if isinstance(kv.get("goal"), dict) else {"x": 1.0, "y": 2.0},
+        ),
         "ros2_topic_info": lambda: b.topic_info(str(kv.get("topic", "/cmd_vel"))),
         "ros2_topic_echo": lambda: b.topic_echo(
             str(kv.get("topic", "/turtle1/pose")), int(kv.get("count", 1))

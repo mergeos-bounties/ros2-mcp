@@ -23,3 +23,23 @@ def ros2_bin() -> str:
 
 def domain_id() -> str:
     return os.environ.get("ROS2_MCP_DOMAIN_ID") or os.environ.get("ROS_DOMAIN_ID") or "0"
+
+
+def pub_allowlist() -> list[str] | None:
+    """Optional live-mode publish allowlist.
+
+    Env ``ROS2_MCP_PUB_ALLOWLIST=/cmd_vel,/turtle1/cmd_vel`` (comma-separated).
+    Empty / unset → all topics allowed.
+    """
+    raw = (os.environ.get("ROS2_MCP_PUB_ALLOWLIST") or "").strip()
+    if not raw:
+        return None
+    return [p.strip() for p in raw.split(",") if p.strip()]
+
+
+def is_pub_allowed(topic: str) -> bool:
+    allow = pub_allowlist()
+    if allow is None:
+        return True
+    t = topic.strip()
+    return t in allow or (t.startswith("/") and t in allow)

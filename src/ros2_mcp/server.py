@@ -187,6 +187,34 @@ def ros2_graph_summary() -> str:
     )
 
 
+@mcp.tool()
+def ros2_tf_tree() -> str:
+    """Return TF frame tree (mock: map→odom→base_link; live: /tf echo)."""
+    return _j(get_backend().tf_tree())
+
+
+@mcp.tool()
+def ros2_list_actions() -> str:
+    """List ROS2 action servers."""
+    return _j(get_backend().list_actions())
+
+
+@mcp.tool()
+def ros2_action_send_goal(action: str, action_type: str, goal_json: str = "{}") -> str:
+    """Send a goal to a ROS2 action (mock succeeds; live uses ros2 CLI).
+
+    Args:
+        action: Action name e.g. /navigate_to_pose
+        action_type: Type e.g. nav2_msgs/action/NavigateToPose
+        goal_json: JSON goal body
+    """
+    try:
+        goal = json.loads(goal_json) if goal_json.strip() else {}
+    except json.JSONDecodeError as e:
+        return _j({"ok": False, "error": f"invalid JSON: {e}"})
+    return _j(get_backend().action_send_goal(action, action_type, goal))
+
+
 def run_stdio() -> None:
     mcp.run(transport="stdio")
 

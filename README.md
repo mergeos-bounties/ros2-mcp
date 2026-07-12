@@ -72,6 +72,8 @@ See [examples/](examples/).
 | `ros2_list_params` | List parameters (node optional) |
 | `ros2_get_param` / `ros2_set_param` | Parameter get/set |
 | `ros2_graph_summary` | Compact graph overview for the model |
+| `ros2_tf_tree` | TF frames (mock map→odom→base_link) |
+| `ros2_list_actions` / `ros2_action_send_goal` | Actions (mock nav2 + turtlesim) |
 | `ros2_doctor` | Environment / connectivity check |
 | `ros2_seed_demo` | Reset mock turtlesim-like graph |
 
@@ -91,6 +93,7 @@ ros2-mcp call list_topics  # one-shot tool call (mock)
 | `ROS2_MCP_MODE` | `mock` | `mock` or `live` |
 | `ROS2_MCP_DOMAIN_ID` | `0` | Hint for live ROS_DOMAIN_ID |
 | `ROS2_MCP_ROS2_BIN` | `ros2` | Path to ros2 CLI |
+| `ROS2_MCP_PUB_ALLOWLIST` | _(empty)_ | Comma topics allowed in **live** publish (safety) |
 
 ## Layout
 

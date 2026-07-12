@@ -42,3 +42,17 @@ def test_params_and_service():
 def test_get_backend_mock():
     set_mode("mock")
     assert get_backend().name == "mock"
+
+
+def test_tf_tree_and_actions():
+    b = MockBackend()
+    b.seed_demo()
+    tree = b.tf_tree()
+    assert tree["ok"] is True
+    assert tree["root"] == "map"
+    assert any(f["child"] == "base_link" for f in tree["frames"])
+    acts = b.list_actions()
+    assert any(a["name"] == "/navigate_to_pose" for a in acts)
+    r = b.action_send_goal("/navigate_to_pose", "nav2_msgs/action/NavigateToPose", {"x": 1.0, "y": 2.0})
+    assert r["ok"] is True
+    assert r["status"] == "SUCCEEDED"

@@ -7,7 +7,7 @@ import shutil
 import subprocess
 from typing import Any
 
-from ros2_mcp.config import domain_id, ros2_bin
+from ros2_mcp.config import domain_id, is_pub_allowed, pub_allowlist, ros2_bin
 
 
 class LiveBackend:
@@ -99,6 +99,12 @@ class LiveBackend:
         data: dict[str, Any],
         times: int = 1,
     ) -> dict[str, Any]:
+        if not is_pub_allowed(topic):
+            return {
+                "ok": False,
+                "error": f"topic {topic} not in ROS2_MCP_PUB_ALLOWLIST",
+                "allowlist": pub_allowlist(),
+            }
         # ros2 topic pub --once <topic> <type> "<yaml/json-ish>"
         payload = json.dumps(data)
         # CLI expects YAML-like; JSON object often works for simple msgs
@@ -199,4 +205,54 @@ class LiveBackend:
         return {
             "ok": False,
             "error": "seed_demo only applies to mock mode — start turtlesim or your bringup for live",
+        }
+
+    def tf_tree(self) -> dict[str, Any]:
+        code, out, err = self._run(["run", "tf2_tools", "view_frames"], timeout=5.0)
+        # Prefer topic echo of /tf once as structured-ish dump
+        c2, o2, e2 = self._run(["topic", "echo", "/tf", "--once"], timeout=8.0)
+        return {
+            "mode": "live",
+            "ok": c2 == 0 or code == 0,
+            "tf_echo": (o2 or e2)[:2000],
+            "view_frames_note": "install tf2_tools for full PDF tree; echo /tf shown when available",
+            "stderr": (err or e2)[:500],
+        }
+
+    def list_actions(self) -> list[dict[str, Any]]:
+        code, out, err = self._run(["action", "list", "-t"])
+        if code != 0:
+            code2, out2, err2 = self._run(["action", "list"])
+            if code2 != 0:
+                return [{"error": err or err2 or out or "ros2 action list failed"}]
+            return [{"name": ln.strip(), "type": ""} for ln in out2.splitlines() if ln.strip()]
+        items: list[dict[str, Any]] = []
+        for line in out.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if "[" in line and line.endswith("]"):
+                name, typ = line.rsplit("[", 1)
+                items.append({"name": name.strip(), "type": typ[:-1].strip()})
+            else:
+                items.append({"name": line, "type": ""})
+        return items
+
+    def action_send_goal(
+        self,
+        action: str,
+        action_type: str,
+        goal: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = json.dumps(goal)
+        code, out, err = self._run(
+            ["action", "send_goal", action, action_type, payload],
+            timeout=30.0,
+        )
+        return {
+            "ok": code == 0,
+            "action": action,
+            "type": action_type,
+            "stdout": out[:2000],
+            "stderr": err[:1000],
         }
