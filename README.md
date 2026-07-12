@@ -8,7 +8,7 @@
 
 **ros2-mcp** is an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server so AI agents (Grok, Cursor, Claude, …) can **inspect and control ROS2** graphs — topics, nodes, services, TF, actions — without hand-writing every `ros2` CLI call.
 
-Product: [mergeos-bounties/ros2-mcp](https://github.com/mergeos-bounties/ros2-mcp)
+**Product:** [mergeos-bounties/ros2-mcp](https://github.com/mergeos-bounties/ros2-mcp)
 
 ---
 
@@ -21,7 +21,7 @@ Product: [mergeos-bounties/ros2-mcp](https://github.com/mergeos-bounties/ros2-mc
 - [CLI reference](#cli-reference)
 - [MCP host config](#mcp-host-config)
 - [Diagrams](#diagrams)
-- [Architecture](#architecture)
+- [Repository layout](#repository-layout)
 - [Development](#development)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
@@ -114,18 +114,16 @@ Set `ROS2_MCP_MODE=live` only on machines with a working ROS2 environment.
 
 ---
 
-
 ## Diagrams
 
-System architecture and workflow — shown full-width below.  
-Open the HTML files for **dark/light theme toggle** and export (PNG/SVG).
+System architecture and workflow — full width. Open the HTML files for **dark/light theme** and export (PNG/SVG).
 
 ### Architecture
 
 [Open interactive diagram](docs/diagrams/architecture.html)
 
 <p align="center">
-  <img src="docs/diagrams/architecture.svg" alt="Architecture diagram" width="100%" />
+  <img src="docs/diagrams/architecture.svg" alt="ros2-mcp architecture" width="100%" />
 </p>
 
 ### Workflow
@@ -133,12 +131,14 @@ Open the HTML files for **dark/light theme toggle** and export (PNG/SVG).
 [Open interactive diagram](docs/diagrams/workflow.html)
 
 <p align="center">
-  <img src="docs/diagrams/workflow.svg" alt="Workflow diagram" width="100%" />
+  <img src="docs/diagrams/workflow.svg" alt="ros2-mcp workflow" width="100%" />
 </p>
 
 *Generated with [archify](https://github.com/tt-a1i).*
 
-## Architecture
+---
+
+## Repository layout
 
 ```text
 AI agent (MCP host)
@@ -150,14 +150,13 @@ AI agent (MCP host)
    │ mock    │  seeded graph (CI / Windows)
    │ live    │  ros2 CLI subprocess bridge
    └─────────┘
-```
 
-```text
 src/ros2_mcp/
   cli.py
   backend/     # mock + live backends
   server.py    # FastMCP tools
 docs/screenshots/
+docs/diagrams/
 ```
 
 ---
