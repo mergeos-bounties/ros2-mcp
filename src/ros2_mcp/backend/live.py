@@ -63,13 +63,17 @@ class LiveBackend:
         return items
 
     def topic_info(self, topic: str) -> dict[str, Any]:
+        from ros2_mcp.backend.parsers import parse_topic_info_verbose
+
         code, out, err = self._run(["topic", "info", topic, "-v"])
         if code != 0:
             code2, out2, err2 = self._run(["topic", "info", topic])
             if code2 != 0:
                 return {"ok": False, "error": err or err2 or out}
-            return {"ok": True, "name": topic, "raw": out2}
-        return {"ok": True, "name": topic, "raw": out}
+            return {"ok": True, "name": topic, "raw": out2, "parsed": False}
+        parsed = parse_topic_info_verbose(out, topic=topic)
+        parsed["parsed"] = True
+        return parsed
 
     def topic_echo(self, topic: str, count: int = 1) -> list[dict[str, Any]]:
         n = max(1, min(count, 10))
