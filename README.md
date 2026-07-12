@@ -20,6 +20,7 @@ Product: [mergeos-bounties/ros2-mcp](https://github.com/mergeos-bounties/ros2-mc
 - [Quick start](#quick-start)
 - [CLI reference](#cli-reference)
 - [MCP host config](#mcp-host-config)
+- [Diagrams](#diagrams)
 - [Architecture](#architecture)
 - [Development](#development)
 - [MergeOS bounties](#mergeos-bounties)
@@ -112,6 +113,18 @@ Example stdio server entry (adjust path to your venv):
 Set `ROS2_MCP_MODE=live` only on machines with a working ROS2 environment.
 
 ---
+
+
+## Diagrams
+
+Interactive Archify diagrams (dark/light theme, export PNG/SVG in the HTML viewer):
+
+| Diagram | Interactive | README embed |
+| --- | --- | --- |
+| **Architecture** | [docs/diagrams/architecture.html](docs/diagrams/architecture.html) | ![Architecture](docs/diagrams/architecture.svg) |
+| **Workflow** | [docs/diagrams/workflow.html](docs/diagrams/workflow.html) | ![Workflow](docs/diagrams/workflow.svg) |
+
+*Generated with [archify](https://github.com/tt-a1i) — open the `.html` files for theme toggle and export.*
 
 ## Architecture
 
