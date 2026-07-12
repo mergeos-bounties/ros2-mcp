@@ -162,3 +162,18 @@ def parse_pkg_list(raw: str) -> list[str]:
             continue
         pkgs.append(name)
     return pkgs
+
+
+def parse_topic_list(raw: str) -> list[dict[str, str]]:
+    """Parse ``ros2 topic list -t`` lines like ``/chatter [std_msgs/msg/String]``."""
+    items: list[dict[str, str]] = []
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "[" in line and line.endswith("]"):
+            name, typ = line.rsplit("[", 1)
+            items.append({"name": name.strip(), "type": typ[:-1].strip()})
+        else:
+            items.append({"name": line, "type": ""})
+    return items
