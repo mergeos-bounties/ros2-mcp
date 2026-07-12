@@ -1,4 +1,4 @@
-from ros2_mcp.backend.parsers import parse_node_list, parse_service_list
+from ros2_mcp.backend.parsers import parse_action_list, parse_node_list, parse_service_list
 
 
 def test_parse_node_list() -> None:
@@ -12,3 +12,10 @@ def test_parse_service_list() -> None:
     assert items[0]["name"] == "/reset"
     assert items[0]["type"] == "std_srvs/srv/Empty"
     assert items[1]["name"] == "/spawn"
+
+
+def test_parse_action_list() -> None:
+    items = parse_action_list("/fibonacci [example_interfaces/action/Fibonacci]\n/nav\n")
+    assert items[0]["name"] == "/fibonacci"
+    assert items[0]["type"] == "example_interfaces/action/Fibonacci"
+    assert items[1]["name"] == "/nav"

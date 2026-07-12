@@ -133,6 +133,8 @@ class MockBackend:
             self._buf[topic] = self._buf[topic][-50:]
 
     def doctor(self) -> dict[str, Any]:
+        actions = getattr(self, "_actions", None)
+        n_actions = len(actions) if actions is not None else 0
         return {
             "ok": True,
             "mode": "mock",
@@ -141,6 +143,13 @@ class MockBackend:
             "topics": len(self._topics),
             "nodes": len(self._nodes),
             "services": len(self._services),
+            "actions": n_actions,
+            "graph_summary": {
+                "topics": len(self._topics),
+                "nodes": len(self._nodes),
+                "services": len(self._services),
+                "actions": n_actions,
+            },
         }
 
     def list_topics(self) -> list[dict[str, Any]]:

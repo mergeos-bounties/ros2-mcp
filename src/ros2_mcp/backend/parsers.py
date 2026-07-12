@@ -111,3 +111,18 @@ def parse_service_list(raw: str) -> list[dict[str, str]]:
         else:
             items.append({"name": line, "type": ""})
     return items
+
+
+def parse_action_list(raw: str) -> list[dict[str, str]]:
+    """Parse ``ros2 action list -t`` lines like ``/fibonacci [example_interfaces/action/Fibonacci]``."""
+    items: list[dict[str, str]] = []
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if "[" in line and line.endswith("]"):
+            name, typ = line.rsplit("[", 1)
+            items.append({"name": name.strip(), "type": typ[:-1].strip()})
+        else:
+            items.append({"name": line, "type": ""})
+    return items
