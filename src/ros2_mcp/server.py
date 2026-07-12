@@ -215,6 +215,55 @@ def ros2_action_send_goal(action: str, action_type: str, goal_json: str = "{}") 
     return _j(get_backend().action_send_goal(action, action_type, goal))
 
 
+@mcp.tool()
+def lappa_http_bridge(
+    base_url: str = "http://127.0.0.1:8840",
+    path: str = "/health",
+    method: str = "GET",
+) -> str:
+    """Probe a Lappa IDE server over HTTP (optional bridge for multi-agent ROS workflows).
+
+    Does not require Lappa to be installed in this package. When the server is down,
+    returns ok=false with a clear error (safe for mock/CI).
+
+    Args:
+        base_url: Lappa server origin (default local IDE)
+        path: API path, e.g. /health, /api/demos, /api/sim/state
+        method: HTTP method (GET only in this scaffold)
+    """
+    import urllib.error
+    import urllib.request
+
+    method_u = (method or "GET").upper()
+    if method_u != "GET":
+        return _j({"ok": False, "error": "only GET supported in scaffold", "method": method_u})
+    url = base_url.rstrip("/") + "/" + path.lstrip("/")
+    try:
+        req = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=2.0) as resp:  # noqa: S310
+            body = resp.read().decode("utf-8", errors="replace")[:4000]
+            return _j(
+                {
+                    "ok": True,
+                    "url": url,
+                    "status": getattr(resp, "status", 200),
+                    "body_preview": body,
+                    "bridge": "lappa-http",
+                    "ros2_mcp_version": __version__,
+                }
+            )
+    except Exception as exc:  # noqa: BLE001
+        return _j(
+            {
+                "ok": False,
+                "url": url,
+                "error": str(exc),
+                "hint": "Start Lappa with: lappa serve --port 8840",
+                "bridge": "lappa-http",
+            }
+        )
+
+
 def run_stdio() -> None:
     mcp.run(transport="stdio")
 
