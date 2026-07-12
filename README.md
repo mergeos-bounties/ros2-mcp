@@ -9,6 +9,19 @@
 
 Org: [mergeos-bounties](https://github.com/mergeos-bounties) · MergeOS MRG bounties.
 
+
+## Screenshots
+
+Real captures from running the product demo (ros2-mcp).
+
+![Mock ROS2 graph](docs/screenshots/demo-graph.png)
+
+*Mock ROS2 graph*
+
+![Topic pub + echo](docs/screenshots/demo-topics.png)
+
+*Topic pub + echo*
+
 ## Why
 
 - AI tools need a **stable tool schema** for robotics work (list → echo → pub → service).
