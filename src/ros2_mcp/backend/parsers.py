@@ -83,3 +83,31 @@ def parse_topic_info_verbose(raw: str, topic: str = "") -> dict[str, Any]:
             out["name"] = m.group(1)
 
     return out
+
+
+def parse_node_list(raw: str) -> list[str]:
+    """Parse ``ros2 node list`` plain text into node name list."""
+    nodes: list[str] = []
+    for line in (raw or "").splitlines():
+        name = line.strip()
+        if not name or name.startswith("#"):
+            continue
+        if not name.startswith("/"):
+            name = "/" + name
+        nodes.append(name)
+    return nodes
+
+
+def parse_service_list(raw: str) -> list[dict[str, str]]:
+    """Parse ``ros2 service list -t`` lines like ``/foo [std_srvs/srv/Empty]``."""
+    items: list[dict[str, str]] = []
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if "[" in line and line.endswith("]"):
+            name, typ = line.rsplit("[", 1)
+            items.append({"name": name.strip(), "type": typ[:-1].strip()})
+        else:
+            items.append({"name": line, "type": ""})
+    return items

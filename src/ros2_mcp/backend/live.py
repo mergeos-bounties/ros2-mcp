@@ -126,10 +126,12 @@ class LiveBackend:
         }
 
     def list_nodes(self) -> list[str]:
+        from ros2_mcp.backend.parsers import parse_node_list
+
         code, out, err = self._run(["node", "list"])
         if code != 0:
             return [f"error: {err or out}"]
-        return [ln.strip() for ln in out.splitlines() if ln.strip()]
+        return parse_node_list(out)
 
     def node_info(self, node: str) -> dict[str, Any]:
         code, out, err = self._run(["node", "info", node])
@@ -138,23 +140,15 @@ class LiveBackend:
         return {"ok": True, "name": node, "raw": out}
 
     def list_services(self) -> list[dict[str, Any]]:
+        from ros2_mcp.backend.parsers import parse_service_list
+
         code, out, err = self._run(["service", "list", "-t"])
         if code != 0:
             code2, out2, _ = self._run(["service", "list"])
             if code2 != 0:
                 return [{"error": err or out}]
-            return [{"name": ln.strip(), "type": ""} for ln in out2.splitlines() if ln.strip()]
-        items: list[dict[str, Any]] = []
-        for line in out.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            if "[" in line and line.endswith("]"):
-                name, typ = line.rsplit("[", 1)
-                items.append({"name": name.strip(), "type": typ[:-1].strip()})
-            else:
-                items.append({"name": line, "type": ""})
-        return items
+            return parse_service_list(out2)
+        return parse_service_list(out)
 
     def service_call(
         self,
