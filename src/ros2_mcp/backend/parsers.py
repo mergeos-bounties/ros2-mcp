@@ -196,3 +196,30 @@ def parse_tf_frames(raw: str) -> list[str]:
             seen.add(name)
             frames.append(name)
     return frames
+
+
+def parse_bag_info(raw: str) -> dict[str, object]:
+    """Parse a subset of ``ros2 bag info`` text into key fields (best-effort)."""
+    out: dict[str, object] = {"ok": True, "path": None, "duration": None, "messages": None, "topics": []}
+    for line in (raw or "").splitlines():
+        s = line.strip()
+        if s.lower().startswith("files:"):
+            out["path"] = s.split(":", 1)[1].strip()
+        elif s.lower().startswith("duration:"):
+            out["duration"] = s.split(":", 1)[1].strip()
+        elif s.lower().startswith("messages:"):
+            try:
+                out["messages"] = int(s.split(":", 1)[1].strip().split()[0])
+            except Exception:
+                out["messages"] = s.split(":", 1)[1].strip()
+        elif s.startswith("Topic:") or s.startswith("/"):
+            # "Topic: /chatter | Type: std_msgs/msg/String | Count: 10"
+            name = s
+            if "|" in s:
+                name = s.split("|", 1)[0]
+            name = name.replace("Topic:", "").strip()
+            if name.startswith("/"):
+                topics = out["topics"]
+                if isinstance(topics, list):
+                    topics.append(name)
+    return out

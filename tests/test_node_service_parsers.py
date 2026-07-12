@@ -4,6 +4,7 @@ from ros2_mcp.backend.parsers import (
     parse_pkg_list,
     parse_topic_list,
     parse_tf_frames,
+    parse_bag_info,
     parse_node_list,
     parse_param_list,
     parse_service_list,
@@ -61,3 +62,10 @@ def test_parse_tf_frames() -> None:
     items = parse_tf_frames("Frame: base_link\nFrame: map\n# skip\n")
     assert "base_link" in items
     assert "map" in items
+
+
+def test_parse_bag_info() -> None:
+    raw = "Files: demo.mcap\nDuration: 12.5s\nMessages: 42\nTopic: /chatter | Type: std_msgs/msg/String\n"
+    info = parse_bag_info(raw)
+    assert info["messages"] == 42
+    assert "/chatter" in info["topics"]
