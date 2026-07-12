@@ -26,13 +26,15 @@ def version_cmd() -> None:
 @app.command("doctor")
 def doctor_cmd() -> None:
     """Backend health + mode + publish allowlist (if set)."""
-    from ros2_mcp.config import pub_allowlist
+    from ros2_mcp.config import domain_id, pub_allowlist, ros2_bin
 
     b = get_backend()
     info = b.doctor()
     info["ros2_mcp_version"] = __version__
     info["mode"] = get_mode()
     info["pub_allowlist"] = pub_allowlist()
+    info["ros2_bin"] = ros2_bin()
+    info["domain_id"] = domain_id()
     rprint(info)
 
 
