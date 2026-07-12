@@ -23,6 +23,19 @@ def version_cmd() -> None:
     rprint({"version": __version__, "mode": get_mode()})
 
 
+@app.command("doctor")
+def doctor_cmd() -> None:
+    """Backend health + mode + publish allowlist (if set)."""
+    from ros2_mcp.config import pub_allowlist
+
+    b = get_backend()
+    info = b.doctor()
+    info["ros2_mcp_version"] = __version__
+    info["mode"] = get_mode()
+    info["pub_allowlist"] = pub_allowlist()
+    rprint(info)
+
+
 @app.command("demo")
 def demo_cmd() -> None:
     """Offline smoke: seed mock graph and exercise core APIs."""
