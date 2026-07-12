@@ -15,7 +15,9 @@ class MockBackend:
         self._t0 = time.time()
         self.seed_demo()
 
-    def seed_demo(self) -> dict[str, Any]:
+    def seed_demo(self, profile: str = "default") -> dict[str, Any]:
+        if profile == "fleet":
+            return self._seed_fleet()
         self._topics: dict[str, dict[str, Any]] = {
             "/turtle1/cmd_vel": {
                 "type": "geometry_msgs/msg/Twist",
@@ -121,6 +123,61 @@ class MockBackend:
             },
         )
         return {"ok": True, "mode": "mock", "topics": list(self._topics), "nodes": list(self._nodes)}
+
+    def _seed_fleet(self) -> dict[str, Any]:
+        """Seed a 3-robot fleet graph: robot0/robot1/robot2 with cmd_vel + odom namespaces.
+
+        Each robot gets its own namespaced topics (/robotN/cmd_vel, /robotN/odom,
+        /robotN/scan, /robotN/tf), nodes, and diff-drive params. The three robots
+        differ by their diff-drive wheel_radius and grid offset (3 diffs).
+        """
+        self._topics = {}
+        self._nodes = {}
+        self._services = {}
+        self._params = {}
+        self._pose = {"x": 0.0, "y": 0.0, "theta": 0.0, "linear_velocity": 0.0, "angular_velocity": 0.0}
+        fleet_offsets = [(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]
+        for i in range(3):
+            r = f"robot{i}"
+            ox, oy = fleet_offsets[i]
+            self._topics[f"/{r}/cmd_vel"] = {
+                "type": "geometry_msgs/msg/Twist",
+                "publishers": [f"/{r}/controller"],
+                "subscribers": [f"/{r}/diff_drive"],
+            }
+            self._topics[f"/{r}/odom"] = {
+                "type": "nav_msgs/msg/Odometry",
+                "publishers": [f"/{r}/diff_drive"],
+                "subscribers": [f"/{r}/ekf"],
+            }
+            self._topics[f"/{r}/scan"] = {
+                "type": "sensor_msgs/msg/LaserScan",
+                "publishers": [f"/{r}/lidar"],
+                "subscribers": [f"/{r}/slam"],
+            }
+            self._topics[f"/{r}/tf"] = {
+                "type": "tf2_msgs/msg/TFMessage",
+                "publishers": [f"/{r}/robot_state_publisher"],
+                "subscribers": [],
+            }
+            self._nodes[f"/{r}/controller"] = {"publishers": [f"/{r}/cmd_vel"], "subscribers": [], "services": []}
+            self._nodes[f"/{r}/diff_drive"] = {"publishers": [f"/{r}/odom"], "subscribers": [f"/{r}/cmd_vel"], "services": []}
+            self._nodes[f"/{r}/lidar"] = {"publishers": [f"/{r}/scan"], "subscribers": [], "services": []}
+            self._nodes[f"/{r}/robot_state_publisher"] = {"publishers": [f"/{r}/tf"], "subscribers": [], "services": []}
+            self._params[f"/{r}/diff_drive"] = {
+                "wheel_separation": 0.3,
+                "wheel_radius": round(0.05 + i * 0.01, 2),  # 3 diffs: 0.05, 0.06, 0.07
+                "odom_frame": f"{r}/odom",
+                "base_frame": f"{r}/base_link",
+                "offset_x": ox,
+                "offset_y": oy,
+            }
+        self._buf = {t: [] for t in self._topics}
+        for i in range(3):
+            r = f"robot{i}"
+            self._push(f"/{r}/odom", {"pose": {"x": 0.0, "y": 0.0, "theta": 0.0}, "twist": {"linear_x": 0.0, "angular_z": 0.0}})
+            self._push(f"/{r}/scan", {"angle_min": -math.pi, "angle_max": math.pi, "ranges": [3.0] * 36})
+        return {"ok": True, "mode": "mock", "profile": "fleet", "robots": 3, "topics": list(self._topics), "nodes": list(self._nodes)}
 
     def _stamp(self) -> float:
         return round(time.time() - self._t0, 3)

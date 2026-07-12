@@ -56,3 +56,32 @@ def test_tf_tree_and_actions():
     r = b.action_send_goal("/navigate_to_pose", "nav2_msgs/action/NavigateToPose", {"x": 1.0, "y": 2.0})
     assert r["ok"] is True
     assert r["status"] == "SUCCEEDED"
+
+
+def test_seed_fleet_profile():
+    """Test multi-robot fleet graph seeding (Issue #4)."""
+    b = MockBackend()
+    result = b.seed_demo(profile="fleet")
+    assert result["ok"] is True
+    assert result["profile"] == "fleet"
+    assert result["robots"] == 3
+
+    # Verify 3 robots with namespaced topics
+    topics = b.list_topics()
+    for i in range(3):
+        assert any(t["name"] == f"/robot{i}/cmd_vel" for t in topics), f"missing /robot{i}/cmd_vel"
+        assert any(t["name"] == f"/robot{i}/odom" for t in topics), f"missing /robot{i}/odom"
+        assert any(t["name"] == f"/robot{i}/scan" for t in topics), f"missing /robot{i}/scan"
+
+    # Verify 3 diffs: wheel_radius differs per robot
+    params = b.list_params()
+    radii = [p["value"] for p in params if p["name"] == "wheel_radius"]
+    assert len(radii) == 3, f"expected 3 wheel_radius params, got {len(radii)}"
+    assert radii == [0.05, 0.06, 0.07], f"wheel_radius values should differ: {radii}"
+
+    # Verify fleet nodes exist
+    nodes = b.list_nodes()
+    for i in range(3):
+        assert f"/robot{i}/controller" in nodes
+        assert f"/robot{i}/diff_drive" in nodes
+        assert f"/robot{i}/lidar" in nodes
