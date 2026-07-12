@@ -106,6 +106,9 @@ def tools_list() -> None:
 def call_cmd(
     tool: str = typer.Argument(..., help="Short name e.g. list_topics or ros2_list_topics"),
     arg: Optional[list[str]] = typer.Argument(None, help="key=value pairs"),
+    json_file: Optional[str] = typer.Option(
+        None, "--json-file", help="Path to JSON file with tool arguments (merged with key=value pairs)"
+    ),
 ) -> None:
     """One-shot mock/live tool call without MCP host."""
     b = get_backend()
@@ -118,6 +121,12 @@ def call_cmd(
                 kv[k] = json.loads(v)
             except json.JSONDecodeError:
                 kv[k] = v
+    if json_file:
+        with open(json_file, "r", encoding="utf-8") as fh:
+            file_args = json.load(fh)
+        if not isinstance(file_args, dict):
+            raise typer.BadParameter("--json-file must contain a JSON object")
+        kv.update(file_args)
 
     dispatch = {
         "ros2_mode": lambda: switch_mode(str(kv.get("mode", get_mode()))),
