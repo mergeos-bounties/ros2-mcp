@@ -5,6 +5,7 @@ from ros2_mcp.backend.parsers import (
     parse_topic_list,
     parse_tf_frames,
     parse_bag_info,
+    parse_doctor_report,
     parse_node_list,
     parse_param_list,
     parse_service_list,
@@ -69,3 +70,10 @@ def test_parse_bag_info() -> None:
     info = parse_bag_info(raw)
     assert info["messages"] == 42
     assert "/chatter" in info["topics"]
+
+
+def test_parse_doctor_report() -> None:
+    info = parse_doctor_report("All systems ok\nWARN: unused package\n")
+    assert info["warnings"] == 1
+    assert info["errors"] == 0
+    assert info["ok"] is True

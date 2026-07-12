@@ -223,3 +223,22 @@ def parse_bag_info(raw: str) -> dict[str, object]:
                 if isinstance(topics, list):
                     topics.append(name)
     return out
+
+
+def parse_doctor_report(raw: str) -> dict[str, object]:
+    """Parse a loose subset of ``ros2 doctor`` / health text into summary fields."""
+    text = raw or ""
+    out: dict[str, object] = {
+        "ok": True,
+        "warnings": 0,
+        "errors": 0,
+        "lines": [],
+    }
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    out["lines"] = lines[:50]
+    warn = sum(1 for ln in lines if "warn" in ln.lower())
+    err = sum(1 for ln in lines if "error" in ln.lower() or "fail" in ln.lower())
+    out["warnings"] = warn
+    out["errors"] = err
+    out["ok"] = err == 0
+    return out
