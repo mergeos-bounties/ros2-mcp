@@ -1,6 +1,7 @@
 from ros2_mcp.backend.parsers import (
     parse_action_list,
     parse_interface_list,
+    parse_pkg_list,
     parse_node_list,
     parse_param_list,
     parse_service_list,
@@ -38,3 +39,10 @@ def test_parse_interface_list() -> None:
     assert "std_msgs/msg/String" in items
     assert "std_srvs/srv/Empty" in items
     assert "Messages" not in items
+
+
+def test_parse_pkg_list() -> None:
+    items = parse_pkg_list("rclpy\nturtlesim\n# comment\n")
+    assert "rclpy" in items
+    assert "turtlesim" in items
+    assert all(not x.startswith("#") for x in items)

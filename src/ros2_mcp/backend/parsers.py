@@ -151,3 +151,14 @@ def parse_interface_list(raw: str) -> list[str]:
             continue
         items.append(name)
     return items
+
+
+def parse_pkg_list(raw: str) -> list[str]:
+    """Parse ``ros2 pkg list`` plain text into package names."""
+    pkgs: list[str] = []
+    for line in (raw or "").splitlines():
+        name = line.strip()
+        if not name or name.startswith("#"):
+            continue
+        pkgs.append(name)
+    return pkgs
