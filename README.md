@@ -18,6 +18,7 @@
 - [Highlights](#highlights)
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
+- [Tiếng Việt quickstart](#tiếng-việt-quickstart)
 - [CLI reference](#cli-reference)
 - [MCP resources](#mcp-resources)
 - [Logging](#logging)
@@ -74,6 +75,36 @@ ros2-mcp tools list
 ```
 
 Mock mode needs **no** ROS2 install.
+
+---
+
+## Tiếng Việt quickstart
+
+`ros2-mcp` mặc định chạy ở **mock mode**, vì vậy bạn có thể thử ngay cả khi
+máy chưa cài ROS2.
+
+```bash
+cd ros2-mcp
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+ros2-mcp version
+ros2-mcp demo
+ros2-mcp tools list
+```
+
+Khi muốn kết nối tới hệ ROS2 thật, hãy cài và source ROS2 trên máy host rồi đặt
+mode sang `live`:
+
+```bash
+export ROS2_MCP_MODE=live
+ros2-mcp doctor
+ros2-mcp serve
+```
+
+Nếu chỉ cần kiểm tra nhanh, hãy giữ `ROS2_MCP_MODE=mock` để dùng đồ thị demo
+turtlesim-like có sẵn.
 
 ---
 
