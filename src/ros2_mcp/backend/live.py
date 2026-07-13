@@ -7,6 +7,7 @@ import shutil
 import subprocess
 from typing import Any
 
+from ros2_mcp.backend.parsers import parse_node_info, parse_topic_info_verbose
 from ros2_mcp.config import domain_id, is_pub_allowed, pub_allowlist, ros2_bin
 
 
@@ -68,8 +69,10 @@ class LiveBackend:
             code2, out2, err2 = self._run(["topic", "info", topic])
             if code2 != 0:
                 return {"ok": False, "error": err or err2 or out}
-            return {"ok": True, "name": topic, "raw": out2}
-        return {"ok": True, "name": topic, "raw": out}
+            parsed = parse_topic_info_verbose(out2)
+            return {"ok": True, "name": topic, "raw": out2, **parsed}
+        parsed = parse_topic_info_verbose(out)
+        return {"ok": True, "name": topic, "raw": out, **parsed}
 
     def topic_echo(self, topic: str, count: int = 1) -> list[dict[str, Any]]:
         n = max(1, min(count, 10))
@@ -131,7 +134,8 @@ class LiveBackend:
         code, out, err = self._run(["node", "info", node])
         if code != 0:
             return {"ok": False, "error": err or out}
-        return {"ok": True, "name": node, "raw": out}
+        parsed = parse_node_info(out)
+        return {"ok": True, "name": node, "raw": out, **parsed}
 
     def list_services(self) -> list[dict[str, Any]]:
         code, out, err = self._run(["service", "list", "-t"])
