@@ -416,6 +416,38 @@ class MockBackend:
             "ok": True,
         }
 
+    def bag_info(self, path: str | None = None) -> dict[str, Any]:
+        """Return deterministic rosbag metadata for offline agents."""
+        bag_path = path or "mock://turtlesim-demo"
+        return {
+            "ok": True,
+            "mode": "mock",
+            "path": bag_path,
+            "storage_id": "mcap",
+            "duration": "12.5s",
+            "messages": 84,
+            "topics": [
+                {
+                    "name": "/turtle1/pose",
+                    "type": "turtlesim/msg/Pose",
+                    "messages": 42,
+                    "serialization_format": "cdr",
+                },
+                {
+                    "name": "/turtle1/cmd_vel",
+                    "type": "geometry_msgs/msg/Twist",
+                    "messages": 12,
+                    "serialization_format": "cdr",
+                },
+                {
+                    "name": "/scan",
+                    "type": "sensor_msgs/msg/LaserScan",
+                    "messages": 30,
+                    "serialization_format": "cdr",
+                },
+            ],
+        }
+
     def list_actions(self) -> list[dict[str, Any]]:
         return [
             {

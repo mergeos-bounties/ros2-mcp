@@ -58,6 +58,16 @@ def test_tf_tree_and_actions():
     assert r["status"] == "SUCCEEDED"
 
 
+def test_mock_bag_info_fixture():
+    b = MockBackend()
+    info = b.bag_info()
+    assert info["ok"] is True
+    assert info["mode"] == "mock"
+    assert info["storage_id"] == "mcap"
+    assert info["messages"] == 84
+    assert any(t["name"] == "/turtle1/pose" for t in info["topics"])
+
+
 def test_seed_fleet_profile():
     """Test multi-robot fleet graph seeding (Issue #4)."""
     b = MockBackend()
