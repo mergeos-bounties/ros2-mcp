@@ -10,3 +10,4 @@ def test_doctor_includes_sim_time():
     assert d.get("clock_source") == "mock_steady"
     assert d.get("namespace_count", 0) >= 1
     assert d.get("topic_type_count", 0) >= 1
+    assert d.get("tf_frame_count", 0) >= 1

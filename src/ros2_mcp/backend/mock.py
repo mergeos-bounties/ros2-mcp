@@ -211,6 +211,8 @@ class MockBackend:
             "clock_source": "mock_steady",
             "namespace_count": self._namespace_count(),
             "topic_type_count": len({m.get("type") for m in self._topics.values()}),
+            "tf_frame_count": self._tf_frame_count(),
+            "publish_allowlist_size": len(self._pub_allowlist_names()),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
@@ -225,6 +227,24 @@ class MockBackend:
             if len(parts) >= 2:
                 ns.add(parts[0])
         return max(1, len(ns))
+
+    def _tf_frame_count(self) -> int:
+        """Synthetic TF frame inventory for mock doctor (map/odom/base + sensors)."""
+        frames = {"map", "odom", "base_link", "laser", "camera_link"}
+        for name in self._nodes:
+            if "camera" in str(name):
+                frames.add("camera_optical")
+            if "lidar" in str(name) or "scan" in str(name):
+                frames.add("lidar_link")
+        return len(frames)
+
+    def _pub_allowlist_names(self) -> set[str]:
+        try:
+            from ros2_mcp.config import pub_allowlist
+
+            return set(pub_allowlist() or [])
+        except Exception:  # noqa: BLE001
+            return set()
 
     def list_topics(self) -> list[dict[str, Any]]:
         return [{"name": n, "type": m["type"]} for n, m in sorted(self._topics.items())]
