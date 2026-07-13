@@ -213,6 +213,8 @@ class MockBackend:
             "topic_type_count": len({m.get("type") for m in self._topics.values()}),
             "tf_frame_count": self._tf_frame_count(),
             "publish_allowlist_size": len(self._pub_allowlist_names()),
+            "action_count": n_actions,
+            "service_count": len(self._services),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
