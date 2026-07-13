@@ -242,3 +242,18 @@ def parse_doctor_report(raw: str) -> dict[str, object]:
     out["errors"] = err
     out["ok"] = err == 0
     return out
+
+
+def parse_launch_list(raw: str) -> list[dict[str, str]]:
+    """Parse loose ``ros2 launch`` package listing lines into name/path pairs."""
+    items: list[dict[str, str]] = []
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if " " in line:
+            name, path = line.split(None, 1)
+            items.append({"name": name, "path": path})
+        else:
+            items.append({"name": line, "path": ""})
+    return items

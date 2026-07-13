@@ -6,6 +6,7 @@ from ros2_mcp.backend.parsers import (
     parse_tf_frames,
     parse_bag_info,
     parse_doctor_report,
+    parse_launch_list,
     parse_node_list,
     parse_param_list,
     parse_service_list,
@@ -77,3 +78,10 @@ def test_parse_doctor_report() -> None:
     assert info["warnings"] == 1
     assert info["errors"] == 0
     assert info["ok"] is True
+
+
+def test_parse_launch_list() -> None:
+    items = parse_launch_list("demo_nodes_cpp talker.launch.py\nturtlesim\n")
+    assert items[0]["name"] == "demo_nodes_cpp"
+    assert "talker" in items[0]["path"]
+    assert items[1]["name"] == "turtlesim"

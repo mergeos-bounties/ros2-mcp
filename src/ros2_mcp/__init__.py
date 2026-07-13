@@ -1,3 +1,3 @@
 """ros2-mcp — MCP server for ROS2 interaction."""
 
-__version__ = "0.1.14"
+__version__ = "0.1.15"
