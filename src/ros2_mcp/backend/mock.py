@@ -210,6 +210,7 @@ class MockBackend:
             "sim_time_sec": round(time.time() - self._t0, 3),
             "clock_source": "mock_steady",
             "namespace_count": self._namespace_count(),
+            "topic_type_count": len({m.get("type") for m in self._topics.values()}),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
