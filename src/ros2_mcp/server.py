@@ -78,6 +78,38 @@ def ros2_topic_echo(topic: str, count: int = 1) -> str:
     return _j(get_backend().topic_echo(topic, count=count))
 
 
+@mcp.resource("topic://{topic_name}")
+def topic_resource(topic_name: str) -> str:
+    """Snapshot of a ROS2 topic: type, pub/sub counts, and last buffered messages.
+
+    Addressable via the MCP resources protocol using a ``topic://<name>`` URI,
+    e.g. ``topic://clock`` or ``topic://scan`` (leading slash optional;
+    normalized internally). Note: the MCP SDK's URI template matcher binds a
+    single path segment, so namespaced topics containing '/' (e.g.
+    ``/turtle1/pose``) cannot be addressed via a literal ``topic://`` URI read
+    but are fully supported when this resource function is invoked directly
+    (e.g. from in-process code or tests).
+    """
+    topic = topic_name if topic_name.startswith("/") else f"/{topic_name}"
+    backend = get_backend()
+    info = backend.topic_info(topic)
+    if not info.get("ok", True) and "error" in info:
+        return _j({"ok": False, "topic": topic, "error": info["error"]})
+    messages = backend.topic_echo(topic, count=5)
+    return _j(
+        {
+            "ok": True,
+            "uri": f"topic://{topic.lstrip('/')}",
+            "topic": topic,
+            "type": info.get("type"),
+            "publishers": info.get("publishers"),
+            "subscribers": info.get("subscribers"),
+            "mode": get_mode(),
+            "messages": messages,
+        }
+    )
+
+
 @mcp.tool()
 def ros2_topic_pub(
     topic: str,

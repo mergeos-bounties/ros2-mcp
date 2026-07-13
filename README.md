@@ -19,6 +19,7 @@
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
 - [CLI reference](#cli-reference)
+- [MCP resources](#mcp-resources)
 - [Logging](#logging)
 - [MCP host config](#mcp-host-config)
 - [Diagrams](#diagrams)
@@ -94,6 +95,40 @@ ros2-mcp serve
 # With structured tool-call logging (JSON to stderr)
 ros2-mcp serve --verbose
 ```
+
+---
+
+## MCP resources
+
+In addition to tools, the server exposes an **MCP resource template** so hosts can
+read a topic snapshot as addressable content instead of calling a tool.
+
+| URI | Returns |
+| --- | --- |
+| `topic://<topic_name>` | JSON snapshot: `type`, `publishers`, `subscribers`, backend `mode`, and the last buffered `messages` (up to 5) for the topic |
+
+The snapshot is served by the active backend (mock or live), so it reflects the
+same graph the `ros2_*` tools operate on. The leading slash is optional and
+normalized internally (`topic://clock` and `topic:///clock` resolve to `/clock`).
+
+```jsonc
+// read: topic://clock
+{
+  "ok": true,
+  "uri": "topic://clock",
+  "topic": "/clock",
+  "type": "rosgraph_msgs/msg/Clock",
+  "publishers": ["/mock_clock"],
+  "subscribers": [],
+  "mode": "mock",
+  "messages": [{ "stamp": 0.025, "data": { "sec": 0, "nanosec": 0 } }]
+}
+```
+
+> Note: the MCP SDK's URI-template matcher binds a single path segment, so a
+> namespaced topic containing `/` (e.g. `/turtle1/pose`) is fully supported when
+> the resource is invoked directly but cannot be addressed through a literal
+> `topic://` URI read. Use `ros2_topic_echo` for namespaced topics via the host.
 
 ---
 
