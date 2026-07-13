@@ -207,6 +207,7 @@ class MockBackend:
                 "services": len(self._services),
                 "actions": n_actions,
             },
+            "sim_time_sec": round(time.time() - self._t0, 3),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
