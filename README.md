@@ -19,6 +19,7 @@
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
 - [CLI reference](#cli-reference)
+- [Logging](#logging)
 - [MCP host config](#mcp-host-config)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
@@ -82,12 +83,39 @@ Mock mode needs **no** ROS2 install.
 | `ros2-mcp version` | Version + mode |
 | `ros2-mcp demo` | Offline smoke of core backend APIs |
 | `ros2-mcp serve` | MCP server over **stdio** (for hosts) |
+| `ros2-mcp serve --verbose` | Same, plus structured JSON tool-call logs on **stderr** |
 | `ros2-mcp call …` | One-shot tool call (mock/live) |
 | `ros2-mcp tools list` | List MCP tools |
 
 ```powershell
 # MCP for Cursor / Claude / Grok-compatible hosts
 ros2-mcp serve
+
+# With structured tool-call logging (JSON to stderr)
+ros2-mcp serve --verbose
+```
+
+---
+
+## Logging
+
+`ros2-mcp serve` emits **structured JSON logs to stderr only**. This is deliberate: the MCP stdio transport uses **stdout** for the JSON-RPC protocol stream, so any log written to stdout would corrupt the protocol and break the host connection. All logging goes to stderr, leaving stdout clean for MCP.
+
+| Flag | Level | What you get |
+| --- | --- | --- |
+| `ros2-mcp serve` | INFO | Lifecycle only: one `serve_start` record (transport, mode, tool count, version) |
+| `ros2-mcp serve --verbose` (`-v`) | DEBUG | Per-tool-call records: `tool_call_start`, `tool_call` (with `duration_ms`, `status`), and `tool_call_error` (with traceback) on failure |
+
+Each record is a single JSON line, easy to pipe into a log collector:
+
+```json
+{"ts": 1712345678.9, "level": "DEBUG", "logger": "ros2_mcp", "msg": "tool_call", "tool": "ros2_list_topics", "duration_ms": 1.42, "status": "ok"}
+```
+
+Capture logs without touching the protocol stream by redirecting stderr:
+
+```bash
+ros2-mcp serve --verbose 2> ros2-mcp.log
 ```
 
 ---

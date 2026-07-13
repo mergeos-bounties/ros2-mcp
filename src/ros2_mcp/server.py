@@ -10,6 +10,7 @@ from mcp.server.fastmcp import FastMCP
 from ros2_mcp import __version__
 from ros2_mcp.backend import get_backend, switch_mode
 from ros2_mcp.config import get_mode
+from ros2_mcp.logging_config import configure_logging, get_logger, log_tool_call
 
 mcp = FastMCP(
     "ros2-mcp",
@@ -264,7 +265,47 @@ def lappa_http_bridge(
         )
 
 
-def run_stdio() -> None:
+def _instrument_tools() -> int:
+    """Wrap every registered MCP tool's fn with the tool-call logger.
+
+    Returns the number of tools instrumented. Idempotent: a tool already
+    wrapped (marked via ``_ros2_mcp_logged``) is skipped.
+    """
+    count = 0
+    manager = getattr(mcp, "_tool_manager", None)
+    tools = getattr(manager, "_tools", {}) if manager is not None else {}
+    for tool in tools.values():
+        fn = getattr(tool, "fn", None)
+        if fn is None or getattr(fn, "_ros2_mcp_logged", False):
+            continue
+        wrapped = log_tool_call(fn)
+        wrapped._ros2_mcp_logged = True  # type: ignore[attr-defined]
+        tool.fn = wrapped
+        count += 1
+    return count
+
+
+def run_stdio(verbose: bool = False) -> None:
+    """Run the MCP server over stdio.
+
+    Args:
+        verbose: When True, enable DEBUG-level structured tool-call logging to
+            stderr (stdout stays reserved for the MCP JSON-RPC stream).
+    """
+    configure_logging(verbose=verbose)
+    instrumented = _instrument_tools()
+    get_logger().info(
+        "serve_start",
+        extra={
+            "extra_fields": {
+                "transport": "stdio",
+                "mode": get_mode(),
+                "verbose": verbose,
+                "tools": instrumented,
+                "version": __version__,
+            }
+        },
+    )
     mcp.run(transport="stdio")
 
 
