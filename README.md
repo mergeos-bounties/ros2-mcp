@@ -180,12 +180,6 @@ Star → claim → PR **master** → MRG **25–200**. Evidence: CLI logs / MCP 
 
 ---
 
-## Tiếng Việt
-
-**ros2-mcp** cho AI điều khiển ROS2 qua MCP. Offline: `ros2-mcp demo` (mock). Live: máy có ROS2 + `ROS2_MCP_MODE=live`.
-
----
-
 ## License
 
 MIT · MergeOS / ThanhTrucSolutions
