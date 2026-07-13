@@ -50,10 +50,12 @@ const footer = `
 
 ## Claim
 
-1. Star https://github.com/mergeos-bounties/ros2-mcp and https://github.com/mergeos-bounties/mergeos  
-2. Comment: \`I claim this bounty\`  
-3. MergeOS [Claim #1](https://github.com/mergeos-bounties/mergeos/issues/1)  
-4. PR to **ros2-mcp** with \`Fixes #<n>\`
+1. Follow https://github.com/mergeos-bounties  
+2. Star https://github.com/mergeos-bounties/mergeos  
+3. Star https://github.com/mergeos-bounties/mergeos-contracts
+4. Comment: \`I claim this bounty\`  
+5. MergeOS [Claim #1](https://github.com/mergeos-bounties/mergeos/issues/1)  
+6. PR to **ros2-mcp** with \`Fixes #<n>\`
 
 Policy: [docs/BOUNTY.md](../blob/master/docs/BOUNTY.md)
 `;

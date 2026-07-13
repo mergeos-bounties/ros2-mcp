@@ -2,10 +2,12 @@
 
 ## Claim
 
-1. Star https://github.com/mergeos-bounties/ros2-mcp and https://github.com/mergeos-bounties/mergeos
-2. Comment: `I claim this bounty`
-3. Claim on MergeOS [issue #1](https://github.com/mergeos-bounties/mergeos/issues/1)
-4. PR to **ros2-mcp** with `Fixes #<n>`
+1. **Follow** the org https://github.com/mergeos-bounties  
+2. **Star** https://github.com/mergeos-bounties/mergeos  
+3. **Star** https://github.com/mergeos-bounties/mergeos-contracts
+4. Comment: `I claim this bounty`
+5. Claim on MergeOS [issue #1](https://github.com/mergeos-bounties/mergeos/issues/1)
+6. PR to **ros2-mcp** with `Fixes #<n>`
 
 ## Payout
 
