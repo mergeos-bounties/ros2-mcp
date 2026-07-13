@@ -209,12 +209,21 @@ class MockBackend:
             },
             "sim_time_sec": round(time.time() - self._t0, 3),
             "clock_source": "mock_steady",
+            "namespace_count": self._namespace_count(),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
                 "depth_default": 10,
             },
         }
+
+    def _namespace_count(self) -> int:
+        ns: set[str] = set()
+        for name in self._nodes:
+            parts = str(name).strip("/").split("/")
+            if len(parts) >= 2:
+                ns.add(parts[0])
+        return max(1, len(ns))
 
     def list_topics(self) -> list[dict[str, Any]]:
         return [{"name": n, "type": m["type"]} for n, m in sorted(self._topics.items())]
