@@ -207,6 +207,11 @@ class MockBackend:
                 "services": len(self._services),
                 "actions": n_actions,
             },
+            "qos_summary": {
+                "reliable": 3,
+                "best_effort": 1,
+                "depth_default": 10,
+            },
         }
 
     def list_topics(self) -> list[dict[str, Any]]:
