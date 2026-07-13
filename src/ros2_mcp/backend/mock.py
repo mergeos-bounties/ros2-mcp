@@ -208,6 +208,7 @@ class MockBackend:
                 "actions": n_actions,
             },
             "sim_time_sec": round(time.time() - self._t0, 3),
+            "clock_source": "mock_steady",
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
