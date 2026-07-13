@@ -192,11 +192,18 @@ def call_cmd(
 
 
 @app.command("serve")
-def serve_cmd() -> None:
+def serve_cmd(
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="Log structured tool calls (JSON) to stderr; stdout stays MCP-only.",
+    ),
+) -> None:
     """Run MCP server over stdio (for Grok / Cursor / Claude)."""
     from ros2_mcp.server import run_stdio
 
-    run_stdio()
+    run_stdio(verbose=verbose)
 
 
 def main() -> None:
