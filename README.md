@@ -98,6 +98,7 @@ All packages speak **MCP over stdio** (`ros2-mcp serve`). Default mode is **mock
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
 - [Tiếng Việt quickstart](#tiếng-việt-quickstart)
+- [Docker image](#docker-image)
 - [CLI reference](#cli-reference)
 - [MCP resources](#mcp-resources)
 - [Logging](#logging)
@@ -184,6 +185,41 @@ ros2-mcp serve
 
 Nếu chỉ cần kiểm tra nhanh, hãy giữ `ROS2_MCP_MODE=mock` để dùng đồ thị demo
 turtlesim-like có sẵn.
+
+---
+
+## Docker image
+
+Build a ROS2 Humble image with `ros2-mcp` installed into an isolated Python
+3.11 virtual environment:
+
+```bash
+docker build -t ros2-mcp:humble .
+```
+
+Run the offline mock demo:
+
+```bash
+docker run --rm ros2-mcp:humble demo
+```
+
+Serve MCP over stdio from the container:
+
+```bash
+docker run --rm -i ros2-mcp:humble serve
+```
+
+For live ROS2 graphs, run on the host network and switch to live mode:
+
+```bash
+docker run --rm -i --network host \
+  -e ROS2_MCP_MODE=live \
+  -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
+  ros2-mcp:humble serve
+```
+
+The entrypoint sources `/opt/ros/humble/setup.bash` before invoking
+`ros2-mcp`, so ROS2 CLI tools are available to live-mode backend calls.
 
 ---
 
