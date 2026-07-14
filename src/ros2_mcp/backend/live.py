@@ -217,6 +217,25 @@ class LiveBackend:
             "stderr": (err or e2)[:500],
         }
 
+    def bag_info(self, path: str | None = None) -> dict[str, Any]:
+        if not path:
+            return {"ok": False, "mode": "live", "error": "path is required for live ros2 bag info"}
+        from ros2_mcp.backend.parsers import parse_bag_info
+
+        code, out, err = self._run(["bag", "info", path], timeout=20.0)
+        if code != 0:
+            return {
+                "ok": False,
+                "mode": "live",
+                "path": path,
+                "exit": code,
+                "stderr": err[:1000],
+                "stdout": out[:1000],
+            }
+        parsed = parse_bag_info(out)
+        parsed.update({"mode": "live", "path": parsed.get("path") or path, "raw": out[:4000]})
+        return parsed
+
     def list_actions(self) -> list[dict[str, Any]]:
         code, out, err = self._run(["action", "list", "-t"])
         if code != 0:

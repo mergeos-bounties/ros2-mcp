@@ -227,6 +227,16 @@ def ros2_tf_tree() -> str:
 
 
 @mcp.tool()
+def ros2_bag_info(path: str | None = None) -> str:
+    """Return rosbag metadata.
+
+    Args:
+        path: Bag directory or file path. Optional in mock mode, required in live mode.
+    """
+    return _j(get_backend().bag_info(path))
+
+
+@mcp.tool()
 def ros2_list_actions() -> str:
     """List ROS2 action servers."""
     return _j(get_backend().list_actions())

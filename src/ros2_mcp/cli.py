@@ -109,6 +109,7 @@ def tools_list() -> None:
             "ros2_set_param",
             "ros2_graph_summary",
             "ros2_tf_tree",
+            "ros2_bag_info",
             "ros2_list_actions",
             "ros2_action_send_goal",
         ]
@@ -152,6 +153,7 @@ def call_cmd(
         "ros2_list_services": b.list_services,
         "ros2_graph_summary": b.graph_summary,
         "ros2_tf_tree": b.tf_tree,
+        "ros2_bag_info": lambda: b.bag_info(kv.get("path")),
         "ros2_list_actions": b.list_actions,
         "ros2_action_send_goal": lambda: b.action_send_goal(
             str(kv.get("action", "/navigate_to_pose")),

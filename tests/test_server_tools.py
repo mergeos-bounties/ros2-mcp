@@ -3,6 +3,7 @@ import json
 from ros2_mcp.config import set_mode
 from ros2_mcp.server import (
     ros2_doctor,
+    ros2_bag_info,
     ros2_graph_summary,
     ros2_list_nodes,
     ros2_list_topics,
@@ -37,3 +38,7 @@ def test_tools_mock_flow():
     graph = json.loads(ros2_graph_summary())
     assert graph["mode"] == "mock"
     assert "ros2_mcp_version" in graph
+    bag = json.loads(ros2_bag_info())
+    assert bag["ok"] is True
+    assert bag["mode"] == "mock"
+    assert any(t["name"] == "/scan" for t in bag["topics"])
