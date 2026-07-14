@@ -1,0 +1,18 @@
+{
+  "name": "ros2-mcp",
+  "version": "0.1.26",
+  "description": "ROS2 graph: topics, nodes, services, TF, actions (mock + live). One-command install from GitHub for Grok + MCP hosts.",
+  "author": {
+    "name": "MergeOS / ThanhTrucSolutions",
+    "url": "https://github.com/mergeos-bounties"
+  },
+  "homepage": "https://github.com/mergeos-bounties/ros2-mcp",
+  "repository": "https://github.com/mergeos-bounties/ros2-mcp",
+  "license": "MIT",
+  "keywords": [
+    "ros2",
+    "mcp",
+    "robotics",
+    "mergeos"
+  ]
+}

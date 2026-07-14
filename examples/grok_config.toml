@@ -1,11 +1,8 @@
-# Append to ~/.grok/config.toml
+# Paste into ~/.grok/config.toml or project .grok/config.toml
+# Requires: pip install "git+https://github.com/mergeos-bounties/ros2-mcp.git"
 
-[mcp_servers.ros2]
+[mcp_servers.ros2_mcp]
 command = "ros2-mcp"
 args = ["serve"]
-# Windows example with venv:
-# command = "D:\\ThanhTrucSolutions\\ros2-mcp\\.venv\\Scripts\\ros2-mcp.exe"
-# args = ["serve"]
 env = { ROS2_MCP_MODE = "mock" }
 enabled = true
-startup_timeout_sec = 30

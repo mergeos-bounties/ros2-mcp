@@ -1,8 +1,10 @@
 {
   "mcpServers": {
-    "ros2": {
+    "ros2-mcp": {
       "command": "ros2-mcp",
-      "args": ["serve"],
+      "args": [
+        "serve"
+      ],
       "env": {
         "ROS2_MCP_MODE": "mock"
       }
