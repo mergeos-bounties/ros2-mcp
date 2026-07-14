@@ -217,6 +217,8 @@ class MockBackend:
             "service_count": len(self._services),
             "buffered_messages": sum(len(v) for v in self._buf.values()),
             "buffer_topics": len(self._buf),
+            "peer_count": len(self._nodes),
+            "mock_profile": getattr(self, "_profile", "default"),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
