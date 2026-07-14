@@ -1,0 +1,4 @@
+/map_server [active]
+/amcl [active]
+/controller_server [inactive]
+/planner_server [unconfigured]
