@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ros2-mcp"
-version = "0.1.23"
+version = "0.1.24"
 description = "MCP server for AI agents to interact with ROS2 (mock + live)"
 readme = "README.md"
 requires-python = ">=3.11"

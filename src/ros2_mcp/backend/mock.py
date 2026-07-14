@@ -215,6 +215,8 @@ class MockBackend:
             "publish_allowlist_size": len(self._pub_allowlist_names()),
             "action_count": n_actions,
             "service_count": len(self._services),
+            "buffered_messages": sum(len(v) for v in self._buf.values()),
+            "buffer_topics": len(self._buf),
             "qos_summary": {
                 "reliable": 3,
                 "best_effort": 1,
