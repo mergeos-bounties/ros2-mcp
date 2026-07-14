@@ -1,0 +1,4 @@
+/robot_state_publisher:robot_description
+/controller_manager:update_rate
+/nav2:use_sim_time
+/slam_toolbox:mode
