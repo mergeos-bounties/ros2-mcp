@@ -1,0 +1,8 @@
+All 4 checks passed
+
+   /talker: node is not publishing on /chatter
+   /listener: no publishers on /chatter
+
+System clock is not synchronised with NTP
+
+Network interface 'eth0' has MTU 1500
