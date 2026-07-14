@@ -1,0 +1,9 @@
+Files:          demo.mcap
+Bag size:      12.4 MiB
+Duration:       45.2s
+Start:          1710000000.000000000
+End:            1710000045.200000000
+Messages:       12840
+Topic information:
+  /scan: 900 msgs
+  /odom: 4500 msgs
