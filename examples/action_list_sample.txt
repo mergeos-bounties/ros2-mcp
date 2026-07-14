@@ -1,0 +1,4 @@
+/navigate_to_pose
+/follow_waypoints
+/spin
+/backup
