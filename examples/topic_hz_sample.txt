@@ -1,0 +1,6 @@
+average rate: 10.012
+  min: 0.098s max: 0.105s std dev: 0.002s window: 50
+topic: /scan
+average rate: 15.004
+  min: 0.065s max: 0.068s std dev: 0.001s window: 80
+topic: /odom
