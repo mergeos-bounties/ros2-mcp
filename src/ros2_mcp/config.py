@@ -43,3 +43,7 @@ def is_pub_allowed(topic: str) -> bool:
         return True
     t = topic.strip()
     return t in allow or (t.startswith("/") and t in allow)
+
+
+from pathlib import Path as _Path
+ALLOWLIST_PATH = _Path(os.environ.get("ROS2_MCP_DATA_DIR", _Path.home() / ".ros2_mcp")) / "allowlist.json"
