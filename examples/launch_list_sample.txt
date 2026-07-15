@@ -1,0 +1,3 @@
+/opt/ros/humble/share/nav2_bringup/launch/bringup_launch.py
+/opt/ros/humble/share/turtlebot3_gazebo/launch/turtlebot3_world.launch.py
+/workspace/install/demo/share/demo/launch/sim.launch.py
