@@ -1,4 +1,7 @@
-/robot_state_publisher:robot_description
-/controller_manager:update_rate
-/nav2:use_sim_time
-/slam_toolbox:mode
+Node: /controller_manager
+  use_sim_time: false
+  update_rate: 100
+Node: /amcl
+  alpha1: 0.2
+  max_particles: 2000
+  min_particles: 500
