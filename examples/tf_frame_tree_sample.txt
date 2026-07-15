@@ -1,0 +1,7 @@
+map
+└── odom
+    └── base_link
+        ├── laser_link
+        ├── imu_link
+        └── camera_link
+            └── camera_optical_frame
