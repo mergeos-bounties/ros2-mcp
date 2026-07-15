@@ -397,3 +397,6 @@ Star → claim → PR **master** → MRG **25–200**. Evidence: CLI logs / MCP 
 ## License
 
 MIT · MergeOS / ThanhTrucSolutions
+
+## Configuration
+See [MCP_HOST_CONFIG.md](docs/MCP_HOST_CONFIG.md) for Claude/Cursor setup.
