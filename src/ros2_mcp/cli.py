@@ -116,6 +116,46 @@ def tools_list() -> None:
     for n in names:
         table.add_row(n)
     console.print(table)
+    console.print(f"[dim]{len(names)} tools[/dim]")
+
+
+@tools_app.command("allowlist")
+def tools_allowlist(
+    add: str | None = typer.Option(None, "--add", help="Add topic to allowlist"),
+    remove: str | None = typer.Option(None, "--remove", help="Remove topic from allowlist"),
+    show: bool = typer.Option(False, "--show", "-s", help="Show current allowlist"),
+) -> None:
+    """Manage the publish allowlist for safety."""
+    from pathlib import Path
+    from ros2_mcp.config import ALLOWLIST_PATH
+    p = ALLOWLIST_PATH
+    if not p.exists():
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({"topics": []}, indent=2))
+    data = json.loads(p.read_text())
+    topics: list[str] = data.setdefault("topics", [])
+    if add:
+        t = add.strip().lstrip("/")
+        if t not in topics:
+            topics.append(t)
+            console.print(f"[green]Added[/green] /{t}")
+        else:
+            console.print(f"[dim]Already in allowlist: /{t}[/dim]")
+    if remove:
+        t = remove.strip().lstrip("/")
+        if t in topics:
+            topics.remove(t)
+            console.print(f"[yellow]Removed[/yellow] /{t}")
+        else:
+            console.print(f"[dim]Not found: /{t}[/dim]")
+    p.write_text(json.dumps(data, indent=2) + "\n")
+    if show or not (add or remove):
+        table = Table(title="Publish Allowlist")
+        table.add_column("Topic")
+        for t in sorted(topics):
+            table.add_row(f"/{t}")
+        console.print(table)
+        console.print(f"[dim]{len(topics)} topics in allowlist[/dim]")
 
 
 @app.command("call")
