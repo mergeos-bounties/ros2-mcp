@@ -1,4 +1,7 @@
-/talker
-/listener
 /robot_state_publisher
 /controller_manager
+/nav2_container
+/bt_navigator
+/amcl
+/map_server
+/lifecycle_manager_navigation
