@@ -1,0 +1,11 @@
+Node [/talker]
+  Subscribers:
+    /parameter_events: rcl_interfaces/msg/ParameterEvent
+  Publishers:
+    /chatter: std_msgs/msg/String
+    /rosout: rcl_interfaces/msg/Log
+  Service Servers:
+    /talker/describe_parameters: rcl_interfaces/srv/DescribeParameters
+  Service Clients:
+  Action Servers:
+  Action Clients:
