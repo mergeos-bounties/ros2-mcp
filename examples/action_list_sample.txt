@@ -1,4 +1,5 @@
-/navigate_to_pose
-/follow_waypoints
-/spin
-/backup
+Available Actions:
+/navigate_to_pose [nav2_msgs/action/NavigateToPose]
+/follow_path [nav2_msgs/action/FollowPath]
+/compute_path_to_pose [nav2_msgs/action/ComputePathToPose]
+/spin [nav2_msgs/action/Spin]
