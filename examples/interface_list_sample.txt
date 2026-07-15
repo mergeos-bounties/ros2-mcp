@@ -1,4 +1,9 @@
-std_msgs/msg/String
-geometry_msgs/msg/Twist
-sensor_msgs/msg/LaserScan
-nav_msgs/msg/Odometry
+Messages:
+  geometry_msgs/msg/Twist
+  sensor_msgs/msg/LaserScan
+  nav_msgs/msg/Odometry
+Services:
+  std_srvs/srv/Empty
+  std_srvs/srv/Trigger
+Actions:
+  nav2_msgs/action/NavigateToPose
