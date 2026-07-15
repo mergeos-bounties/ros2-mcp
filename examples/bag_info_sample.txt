@@ -1,9 +1,8 @@
-Files:          demo.mcap
-Bag size:      12.4 MiB
-Duration:       45.2s
-Start:          1710000000.000000000
-End:            1710000045.200000000
-Messages:       12840
-Topic information:
-  /scan: 900 msgs
-  /odom: 4500 msgs
+path: /data/bags/demo_nav
+duration: 120.5s
+messages: 45210
+topics:
+  /scan: sensor_msgs/msg/LaserScan (1800)
+  /odom: nav_msgs/msg/Odometry (1200)
+  /tf: tf2_msgs/msg/TFMessage (6000)
+  /cmd_vel: geometry_msgs/msg/Twist (900)
