@@ -1,6 +1,8 @@
-requester: calling service /add_two_ints with request
-a: 2
-b: 3
+service: /add_two_ints
+type: example_interfaces/srv/AddTwoInts
+request: {a: 2, b: 3}
+response: {sum: 5}
 ---
-response:
-sum: 5
+service: /spawn
+type: turtlesim/srv/Spawn
+request: {x: 2.0, y: 3.0, theta: 0.0, name: turtle2}
