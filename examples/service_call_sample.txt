@@ -1,0 +1,6 @@
+requester: calling service /add_two_ints with request
+a: 2
+b: 3
+---
+response:
+sum: 5
