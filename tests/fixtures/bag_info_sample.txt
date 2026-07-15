@@ -1,0 +1,9 @@
+Files:             rosbag2_2026_07_15-12_00_00_0.db3
+Bag size:          1.2 GiB
+Storage id:        sqlite3
+Duration:          120.5s
+Start:             Jul 15 2026 12:00:00.000 (1784131200.000)
+End:               Jul 15 2026 12:02:00.500 (1784131320.500)
+Messages:          15000
+Topic information: Topic: /camera/image_raw | Type: sensor_msgs/msg/Image | Count: 3600
+                   Topic: /odom | Type: nav_msgs/msg/Odometry | Count: 11400
