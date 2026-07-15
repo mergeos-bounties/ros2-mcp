@@ -1,0 +1,7 @@
+map
+  odom
+    base_link
+      laser_frame
+      camera_link
+      left_wheel
+      right_wheel
