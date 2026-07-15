@@ -118,6 +118,11 @@ All packages speak **MCP over stdio** (`ros2-mcp serve`). Default mode is **mock
 | **mock** (default) | Windows / CI / no ROS2 install | Seeded turtlesim-like graph: topics, pub, echo, services, TF, actions |
 | **live** | Host has ROS2 + CLI | Real graph via `ros2` subprocess bridge (secrets redacted in logs) |
 
+Live parameter listing is redacted by default: `ros2_list_params` returns
+parameter names and `value: "<redacted-live-value>"` so MCP host transcripts
+and CI logs do not accidentally capture runtime configuration. Use
+`ros2_get_param` only when an explicit single live value read is intended.
+
 ---
 
 ## Highlights

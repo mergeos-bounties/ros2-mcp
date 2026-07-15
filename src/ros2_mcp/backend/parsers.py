@@ -128,15 +128,53 @@ def parse_action_list(raw: str) -> list[dict[str, str]]:
     return items
 
 
-def parse_param_list(raw: str) -> list[str]:
-    """Parse ``ros2 param list`` plain text into fully-qualified parameter names."""
-    params: list[str] = []
+def parse_param_list(raw: str, node: str | None = None) -> list[dict[str, str]]:
+    """Parse ``ros2 param list`` output into ``{"node", "name", "full_name"}`` rows.
+
+    Handles grouped CLI output::
+
+        /robot_state_publisher:
+          robot_description
+
+    compact fixture lines such as ``/robot_state_publisher:robot_description``,
+    and node-scoped bare output when ``node`` is supplied.
+    """
+    params: list[dict[str, str]] = []
+    current_node = _normalize_node_name(node) if node else ""
     for line in (raw or "").splitlines():
-        name = line.strip()
-        if not name or name.startswith("#"):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
             continue
-        params.append(name)
+
+        if stripped.startswith("/") and stripped.endswith(":"):
+            current_node = _normalize_node_name(stripped[:-1])
+            continue
+
+        if stripped.startswith("/") and ":" in stripped:
+            node_part, name_part = stripped.split(":", 1)
+            pname = name_part.strip()
+            if not pname:
+                current_node = _normalize_node_name(node_part)
+                continue
+            params.append(_param_row(_normalize_node_name(node_part), pname))
+            continue
+
+        if current_node:
+            params.append(_param_row(current_node, stripped))
+        else:
+            params.append({"node": "", "name": stripped, "full_name": stripped})
     return params
+
+
+def _normalize_node_name(node: str | None) -> str:
+    if not node:
+        return ""
+    name = node.strip().rstrip(":")
+    return name if name.startswith("/") else f"/{name}"
+
+
+def _param_row(node: str, name: str) -> dict[str, str]:
+    return {"node": node, "name": name, "full_name": f"{node}:{name}" if node else name}
 
 
 def parse_interface_list(raw: str) -> list[str]:

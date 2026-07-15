@@ -368,14 +368,18 @@ class MockBackend:
         return {"ok": True, "service": service, "type": srv_type, "request": request, "response": {"success": True}}
 
     def list_params(self, node: str | None = None) -> list[dict[str, Any]]:
+        from ros2_mcp.backend.parsers import parse_param_list
+
         out: list[dict[str, Any]] = []
         nodes = [node] if node else list(self._params.keys())
         for n in nodes:
             key = n if n in self._params else (n if n.startswith("/") else f"/{n}")
             if key not in self._params:
                 continue
-            for pname, val in self._params[key].items():
-                out.append({"node": key, "name": pname, "value": val})
+            raw = "\n".join(f"{key}:{pname}" for pname in self._params[key])
+            values = self._params[key]
+            for row in parse_param_list(raw):
+                out.append({**row, "value": values[row["name"]]})
         return out
 
     def get_param(self, node: str, name: str) -> dict[str, Any]:
