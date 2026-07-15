@@ -6,6 +6,7 @@ from ros2_mcp.server import (
     ros2_bag_info,
     ros2_graph_summary,
     ros2_list_nodes,
+    ros2_list_params,
     ros2_list_topics,
     ros2_mode,
     ros2_seed_demo,
@@ -24,6 +25,8 @@ def test_tools_mock_flow():
     assert isinstance(topics, list) and len(topics) >= 3
     nodes = json.loads(ros2_list_nodes())
     assert "/turtlesim" in nodes
+    params = json.loads(ros2_list_params(None))
+    assert any(p["full_name"] == "/turtlesim:background_r" for p in params)
     pub = json.loads(
         ros2_topic_pub(
             "/turtle1/cmd_vel",

@@ -87,6 +87,7 @@ def test_seed_fleet_profile():
     params = b.list_params()
     radii = [p["value"] for p in params if p["name"] == "wheel_radius"]
     assert len(radii) == 3, f"expected 3 wheel_radius params, got {len(radii)}"
+    assert all("full_name" in p for p in params)
     assert radii == [0.05, 0.06, 0.07], f"wheel_radius values should differ: {radii}"
 
     # Verify fleet nodes exist

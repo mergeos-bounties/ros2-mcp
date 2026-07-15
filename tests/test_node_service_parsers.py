@@ -35,8 +35,45 @@ def test_parse_action_list() -> None:
 
 def test_parse_param_list() -> None:
     items = parse_param_list("/talker.use_sim_time\n  qos_overrides\n")
-    assert "/talker.use_sim_time" in items
-    assert "qos_overrides" in items
+    assert {"node": "", "name": "/talker.use_sim_time", "full_name": "/talker.use_sim_time"} in items
+    assert {"node": "", "name": "qos_overrides", "full_name": "qos_overrides"} in items
+
+
+def test_parse_param_list_grouped_cli_output() -> None:
+    items = parse_param_list(
+        """
+        /robot_state_publisher:
+          robot_description
+          use_sim_time
+        /controller_manager:update_rate
+        """,
+    )
+    assert {
+        "node": "/robot_state_publisher",
+        "name": "robot_description",
+        "full_name": "/robot_state_publisher:robot_description",
+    } in items
+    assert {
+        "node": "/controller_manager",
+        "name": "update_rate",
+        "full_name": "/controller_manager:update_rate",
+    } in items
+
+
+def test_parse_param_list_with_node_context() -> None:
+    items = parse_param_list("use_sim_time\nrobot_description\n", node="robot_state_publisher")
+    assert items == [
+        {
+            "node": "/robot_state_publisher",
+            "name": "use_sim_time",
+            "full_name": "/robot_state_publisher:use_sim_time",
+        },
+        {
+            "node": "/robot_state_publisher",
+            "name": "robot_description",
+            "full_name": "/robot_state_publisher:robot_description",
+        },
+    ]
 
 
 def test_parse_interface_list() -> None:

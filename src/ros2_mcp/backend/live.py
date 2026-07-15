@@ -170,12 +170,21 @@ class LiveBackend:
         }
 
     def list_params(self, node: str | None = None) -> list[dict[str, Any]]:
-        if not node:
-            return [{"note": "live mode requires node name for param list"}]
-        code, out, err = self._run(["param", "list", node])
+        from ros2_mcp.backend.parsers import parse_param_list
+
+        args = ["param", "list", node] if node else ["param", "list"]
+        code, out, err = self._run(args)
         if code != 0:
             return [{"error": err or out}]
-        return [{"node": node, "name": ln.strip()} for ln in out.splitlines() if ln.strip()]
+        return [
+            {
+                **row,
+                "value": "<redacted-live-value>",
+                "redacted": True,
+                "note": "live mode lists parameter names only; use ros2_get_param for an explicit value read",
+            }
+            for row in parse_param_list(out, node=node)
+        ]
 
     def get_param(self, node: str, name: str) -> dict[str, Any]:
         code, out, err = self._run(["param", "get", node, name])
