@@ -18,6 +18,56 @@ app.add_typer(tools_app, name="tools")
 console = Console()
 
 
+DEFAULT_TOOL_NAMES = [
+    "ros2_mode",
+    "ros2_doctor",
+    "ros2_seed_demo",
+    "ros2_list_topics",
+    "ros2_topic_info",
+    "ros2_topic_echo",
+    "ros2_topic_pub",
+    "ros2_list_nodes",
+    "ros2_node_info",
+    "ros2_list_services",
+    "ros2_service_call",
+    "ros2_list_params",
+    "ros2_get_param",
+    "ros2_set_param",
+    "ros2_graph_summary",
+    "ros2_tf_tree",
+    "ros2_bag_info",
+    "ros2_list_actions",
+    "ros2_action_send_goal",
+]
+
+
+def get_tool_names() -> list[str]:
+    """Return the registered MCP tool names, falling back to the static registry."""
+    try:
+        from ros2_mcp.server import mcp
+
+        tools = getattr(mcp, "_tool_manager", None)
+        if tools is not None:
+            listed = getattr(tools, "_tools", {}) or {}
+            names = sorted(listed.keys())
+            if names:
+                return names
+    except Exception:
+        pass
+
+    return DEFAULT_TOOL_NAMES.copy()
+
+
+def build_tool_table(names: list[str] | None = None, title: str = "ros2-mcp tools") -> Table:
+    """Create a readable inventory table for CLI surfaces."""
+    table = Table(title=title)
+    table.add_column("#", justify="right")
+    table.add_column("Tool")
+    for index, name in enumerate(names or get_tool_names(), start=1):
+        table.add_row(str(index), name)
+    return table
+
+
 @app.command("version")
 def version_cmd() -> None:
     rprint({"version": __version__, "mode": get_mode()})
@@ -44,6 +94,7 @@ def demo_cmd() -> None:
     set_mode("mock")
     b = get_backend()
     b.seed_demo()
+    console.print(build_tool_table(title="ros2-mcp demo tool inventory"))
     rprint(b.doctor())
     topics = b.list_topics()
     rprint({"topics": len(topics), "sample": topics[:5]})
@@ -77,45 +128,7 @@ def demo_cmd() -> None:
 
 @tools_app.command("list")
 def tools_list() -> None:
-    from ros2_mcp.server import mcp
-
-    table = Table(title="ros2-mcp tools")
-    table.add_column("Tool")
-    # FastMCP stores tools internally
-    names: list[str] = []
-    try:
-        # mcp 1.x: _tool_manager.list_tools() may be async; use known registry
-        tools = getattr(mcp, "_tool_manager", None)
-        if tools is not None:
-            listed = getattr(tools, "_tools", {}) or {}
-            names = sorted(listed.keys())
-    except Exception:
-        names = []
-    if not names:
-        names = [
-            "ros2_mode",
-            "ros2_doctor",
-            "ros2_seed_demo",
-            "ros2_list_topics",
-            "ros2_topic_info",
-            "ros2_topic_echo",
-            "ros2_topic_pub",
-            "ros2_list_nodes",
-            "ros2_node_info",
-            "ros2_list_services",
-            "ros2_service_call",
-            "ros2_list_params",
-            "ros2_get_param",
-            "ros2_set_param",
-            "ros2_graph_summary",
-            "ros2_tf_tree",
-            "ros2_bag_info",
-            "ros2_list_actions",
-            "ros2_action_send_goal",
-        ]
-    for n in names:
-        table.add_row(n)
-    console.print(table)
+    console.print(build_tool_table())
 
 
 @app.command("call")
