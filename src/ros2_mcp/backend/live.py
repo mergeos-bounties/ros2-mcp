@@ -7,7 +7,14 @@ import shutil
 import subprocess
 from typing import Any
 
-from ros2_mcp.config import domain_id, is_pub_allowed, pub_allowlist, ros2_bin
+from ros2_mcp.config import (
+    domain_id,
+    is_pub_allowed,
+    is_service_allowed,
+    pub_allowlist,
+    ros2_bin,
+    service_allowlist,
+)
 
 
 class LiveBackend:
@@ -156,6 +163,12 @@ class LiveBackend:
         srv_type: str,
         request: dict[str, Any],
     ) -> dict[str, Any]:
+        if not is_service_allowed(service):
+            return {
+                "ok": False,
+                "error": f"service {service} not in ROS2_MCP_SERVICE_ALLOWLIST",
+                "allowlist": service_allowlist(),
+            }
         payload = json.dumps(request)
         code, out, err = self._run(
             ["service", "call", service, srv_type, payload],

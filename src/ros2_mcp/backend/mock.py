@@ -7,6 +7,8 @@ import time
 from copy import deepcopy
 from typing import Any
 
+from ros2_mcp.config import is_service_allowed, service_allowlist
+
 
 class MockBackend:
     name = "mock"
@@ -350,6 +352,12 @@ class MockBackend:
         srv_type: str,
         request: dict[str, Any],
     ) -> dict[str, Any]:
+        if not is_service_allowed(service):
+            return {
+                "ok": False,
+                "error": f"service {service} not in ROS2_MCP_SERVICE_ALLOWLIST",
+                "allowlist": service_allowlist(),
+            }
         if service not in self._services:
             return {"ok": False, "error": f"unknown service {service}"}
         if service == "/spawn":
