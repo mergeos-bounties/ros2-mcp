@@ -10,4 +10,3 @@ def test_bag_info_sample():
     assert "rosbag2" in content, "Missing rosbag identifier"
     assert "/camera/image_raw" in content, "Missing topic data"
     assert "Duration:" in content, "Missing duration metadata"
-# Trigger CI
