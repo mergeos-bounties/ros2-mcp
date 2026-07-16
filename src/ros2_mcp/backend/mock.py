@@ -293,6 +293,30 @@ class MockBackend:
         n = max(1, min(count, 20))
         return list(reversed(buf[-n:]))
 
+    def topic_hz(self, topic: str | None = None) -> dict[str, Any]:
+        """Return deterministic parsed ``ros2 topic hz`` output for mock mode."""
+        from ros2_mcp.backend.parsers import parse_topic_hz
+
+        raw = """
+        average rate: 10.012
+          min: 0.098s max: 0.105s std dev: 0.002s window: 50
+        topic: /scan
+        average rate: 15.004
+          min: 0.065s max: 0.068s std dev: 0.001s window: 80
+        topic: /odom
+        """
+        parsed = parse_topic_hz(raw, topic=topic)
+        if topic and not parsed["topics"]:
+            return {
+                "ok": False,
+                "mode": "mock",
+                "topic": topic,
+                "error": f"no mock topic hz sample for {topic}",
+                "topic_count": 0,
+                "topics": [],
+            }
+        return {"mode": "mock", **parsed}
+
     def topic_pub(
         self,
         topic: str,

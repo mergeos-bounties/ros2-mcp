@@ -78,6 +78,16 @@ def ros2_topic_echo(topic: str, count: int = 1) -> str:
     return _j(get_backend().topic_echo(topic, count=count))
 
 
+@mcp.tool()
+def ros2_topic_hz(topic: str | None = None) -> str:
+    """Parse/report topic publish rates.
+
+    Args:
+        topic: Optional topic name. Mock mode supports /scan and /odom samples.
+    """
+    return _j(get_backend().topic_hz(topic))
+
+
 @mcp.resource("topic://{topic_name}")
 def topic_resource(topic_name: str) -> str:
     """Snapshot of a ROS2 topic: type, pub/sub counts, and last buffered messages.

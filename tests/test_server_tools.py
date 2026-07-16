@@ -11,6 +11,7 @@ from ros2_mcp.server import (
     ros2_mode,
     ros2_seed_demo,
     ros2_topic_echo,
+    ros2_topic_hz,
     ros2_topic_pub,
 )
 
@@ -38,6 +39,12 @@ def test_tools_mock_flow():
     assert pub["ok"] is True
     echo = json.loads(ros2_topic_echo("/turtle1/pose", 1))
     assert isinstance(echo, list)
+    hz = json.loads(ros2_topic_hz("/scan"))
+    assert hz["ok"] is True
+    assert hz["mode"] == "mock"
+    assert hz["topic_count"] == 1
+    assert hz["topics"][0]["topic"] == "/scan"
+    assert hz["topics"][0]["average_rate_hz"] == 10.012
     graph = json.loads(ros2_graph_summary())
     assert graph["mode"] == "mock"
     assert "ros2_mcp_version" in graph
