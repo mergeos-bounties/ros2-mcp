@@ -1,0 +1,5 @@
+/clear [std_srvs/srv/Empty]
+/spawn [turtlesim/srv/Spawn]
+/turtle1/set_pen [turtlesim/srv/SetPen]
+/parameter_events
+
