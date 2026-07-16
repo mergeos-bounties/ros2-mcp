@@ -255,6 +255,37 @@ def parse_interface_list(raw: str) -> list[str]:
     return items
 
 
+def parse_interface_show(raw: str) -> dict[str, object]:
+    """Parse ``ros2 interface show`` output into a type plus flattened fields."""
+    lines = [line.rstrip() for line in (raw or "").splitlines()]
+    header = ""
+    fields: list[dict[str, object]] = []
+    stack: list[tuple[int, str]] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if not header:
+            header = stripped
+            continue
+
+        indent = len(line) - len(line.lstrip())
+        parts = stripped.split()
+        if len(parts) < 2:
+            continue
+        field_type = parts[0]
+        name = parts[1]
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+        parent_path = ".".join(item[1] for item in stack)
+        path = f"{parent_path}.{name}" if parent_path else name
+        fields.append({"type": field_type, "name": name, "path": path, "indent": indent})
+        stack.append((indent, name))
+
+    return {"type": header, "fields": fields}
+
+
 def parse_pkg_list(raw: str) -> list[str]:
     """Parse ``ros2 pkg list`` plain text into package names."""
     pkgs: list[str] = []

@@ -1,6 +1,9 @@
+from typing import Any
+
 from ros2_mcp.backend.parsers import (
     parse_action_list,
     parse_interface_list,
+    parse_interface_show,
     parse_pkg_list,
     parse_topic_list,
     parse_tf_frames,
@@ -81,6 +84,25 @@ def test_parse_interface_list() -> None:
     assert "std_msgs/msg/String" in items
     assert "std_srvs/srv/Empty" in items
     assert "Messages" not in items
+
+
+def test_parse_interface_show_nested_fields() -> None:
+    raw = """geometry_msgs/msg/Twist
+    geometry_msgs/Vector3 linear
+        float64 x
+        float64 y
+    geometry_msgs/Vector3 angular
+        float64 z
+    """
+    parsed = parse_interface_show(raw)
+
+    assert parsed["type"] == "geometry_msgs/msg/Twist"
+    fields = parsed["fields"]
+    assert isinstance(fields, list)
+    typed_fields: list[dict[str, Any]] = fields
+    assert {"type": "geometry_msgs/Vector3", "name": "linear", "path": "linear", "indent": 4} in typed_fields
+    assert {"type": "float64", "name": "x", "path": "linear.x", "indent": 8} in typed_fields
+    assert {"type": "float64", "name": "z", "path": "angular.z", "indent": 8} in typed_fields
 
 
 def test_parse_pkg_list() -> None:
