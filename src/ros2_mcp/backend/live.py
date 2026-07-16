@@ -141,10 +141,14 @@ class LiveBackend:
         return parse_node_list(out)
 
     def node_info(self, node: str) -> dict[str, Any]:
+        from ros2_mcp.backend.parsers import parse_node_info
+
         code, out, err = self._run(["node", "info", node])
         if code != 0:
             return {"ok": False, "error": err or out}
-        return {"ok": True, "name": node, "raw": out}
+        parsed = parse_node_info(out, node=node)
+        parsed["parsed"] = True
+        return parsed
 
     def list_services(self) -> list[dict[str, Any]]:
         from ros2_mcp.backend.parsers import parse_service_list

@@ -98,6 +98,70 @@ def parse_node_list(raw: str) -> list[str]:
     return nodes
 
 
+def parse_node_info(raw: str, node: str | None = None) -> dict[str, Any]:
+    """Parse ``ros2 node info`` output into structured node endpoint sections."""
+    text = raw or ""
+    out: dict[str, Any] = {
+        "ok": True,
+        "name": _normalize_node_name(node) if node else None,
+        "publishers": [],
+        "subscribers": [],
+        "service_servers": [],
+        "service_clients": [],
+        "action_servers": [],
+        "action_clients": [],
+        "raw": text,
+    }
+    section_map = {
+        "publishers": "publishers",
+        "subscribers": "subscribers",
+        "service servers": "service_servers",
+        "service clients": "service_clients",
+        "action servers": "action_servers",
+        "action clients": "action_clients",
+    }
+    current: str | None = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        node_match = re.match(r"Node\s*\[(?P<name>[^\]]+)\]", stripped, flags=re.I)
+        if node_match:
+            out["name"] = _normalize_node_name(node_match.group("name"))
+            current = None
+            continue
+
+        heading = stripped.rstrip(":").lower()
+        if heading in section_map:
+            current = section_map[heading]
+            continue
+
+        if out["name"] is None and current is None and stripped.startswith("/") and ":" not in stripped:
+            out["name"] = _normalize_node_name(stripped)
+            continue
+
+        if current is None:
+            continue
+
+        item = _parse_node_info_item(stripped)
+        if item:
+            items = out[current]
+            if isinstance(items, list):
+                items.append(item)
+
+    return out
+
+
+def _parse_node_info_item(line: str) -> dict[str, str] | None:
+    if not line or line.endswith(":"):
+        return None
+    if ":" in line:
+        name, typ = line.split(":", 1)
+        return {"name": name.strip(), "type": typ.strip()}
+    return {"name": line.strip(), "type": ""}
+
+
 def parse_service_list(raw: str) -> list[dict[str, str]]:
     """Parse ``ros2 service list -t`` lines like ``/foo [std_srvs/srv/Empty]``."""
     items: list[dict[str, str]] = []
