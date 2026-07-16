@@ -1,5 +1,3 @@
-Based on the repository context and the issue description, here is the complete solution to implement a readable table for listing available MCP tools in the demo command.
+Based on the repository context and the specific requirements of Issue #58, here is the complete solution.
 
-The solution involves two main changes:
-1.  **`src/ros2_mcp/cli.py`**: Update the `demo()` function to use a new helper that formats tool definitions into a Markdown-style table instead of just printing raw JSON or strings.
-2.  **`tests/test_cli.py`**: Add unit tests to verify the table formatting logic works correctly with various tool configurations.
+This implementation introduces a configurable allowlist mechanism for service call targets in `src/ros2_mcp/server.py`. It adds logic to validate service names against an allowlist (defaulting to empty/disabled) before executing calls, with distinct behaviors for mock and live modes. Additionally, it includes comprehensive unit tests in `tests/test_service_allowlist.py` covering configuration loading, validation logic, and edge cases.
