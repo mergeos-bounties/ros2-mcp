@@ -285,6 +285,7 @@ def parse_tf_frames(raw: str) -> list[str]:
     """Parse loose ``tf2_echo`` / frame dump lines into frame ids (best-effort)."""
     frames: list[str] = []
     seen: set[str] = set()
+    tree_prefix_chars = "│├└┌┐┘┬┴┼╰╭╮╯─`'|+\\- "
     for line in (raw or "").splitlines():
         line = line.strip()
         if not line or line.startswith("#"):
@@ -293,7 +294,8 @@ def parse_tf_frames(raw: str) -> list[str]:
         if line.lower().startswith("frame:"):
             name = line.split(":", 1)[1].strip()
         else:
-            name = line.split()[0]
+            tree_line = line.lstrip(tree_prefix_chars).strip()
+            name = tree_line.split()[0] if tree_line else ""
         if name and name not in seen and not name.startswith("["):
             seen.add(name)
             frames.append(name)
