@@ -37,9 +37,40 @@ def pub_allowlist() -> list[str] | None:
     return [p.strip() for p in raw.split(",") if p.strip()]
 
 
+def service_allowlist() -> list[str] | None:
+    """Optional service-call allowlist for mock and live modes.
+
+    Env ``ROS2_MCP_SERVICE_ALLOWLIST=/spawn,/clear`` (comma-separated).
+    Empty / unset → all services allowed.
+    """
+    raw = (os.environ.get("ROS2_MCP_SERVICE_ALLOWLIST") or "").strip()
+    if not raw:
+        return None
+    return [p.strip() for p in raw.split(",") if p.strip()]
+
+
+def _matches_name_allowlist(name: str, allow: list[str]) -> bool:
+    candidate = name.strip()
+    allowed = {item.strip() for item in allow if item.strip()}
+    if not candidate:
+        return False
+    variants = {candidate}
+    if candidate.startswith("/"):
+        variants.add(candidate.lstrip("/"))
+    else:
+        variants.add(f"/{candidate}")
+    return bool(variants & allowed)
+
+
 def is_pub_allowed(topic: str) -> bool:
     allow = pub_allowlist()
     if allow is None:
         return True
-    t = topic.strip()
-    return t in allow or (t.startswith("/") and t in allow)
+    return _matches_name_allowlist(topic, allow)
+
+
+def is_service_allowed(service: str) -> bool:
+    allow = service_allowlist()
+    if allow is None:
+        return True
+    return _matches_name_allowlist(service, allow)
