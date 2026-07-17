@@ -53,7 +53,8 @@ After `pip install "git+https://github.com/mergeos-bounties/ros2-mcp.git"`, poin
 
 **Claude Desktop** — merge [examples/claude_desktop_config.json](examples/claude_desktop_config.json) into Claude MCP config.
 
-**Cursor** — merge [examples/cursor_mcp.json](examples/cursor_mcp.json).
+**Cursor** — merge [examples/cursor_mcp.json](examples/cursor_mcp.json), or see
+[MCP host configuration](docs/MCP_HOST_CONFIG.md) for the full mock-mode setup.
 
 **Grok config.toml** (manual, without plugin):
 
@@ -399,4 +400,5 @@ Star → claim → PR **master** → MRG **25–200**. Evidence: CLI logs / MCP 
 MIT · MergeOS / ThanhTrucSolutions
 
 ## Configuration
-See [MCP_HOST_CONFIG.md](docs/MCP_HOST_CONFIG.md) for Claude/Cursor setup.
+See [MCP_HOST_CONFIG.md](docs/MCP_HOST_CONFIG.md) for Claude/Cursor setup,
+including a copy-paste Cursor MCP config that defaults to mock mode.
