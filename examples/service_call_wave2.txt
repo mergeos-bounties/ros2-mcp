@@ -1,0 +1,33 @@
+service: /add_two_ints
+type: example_interfaces/srv/AddTwoInts
+request: {a: 2, b: 3}
+response: {sum: 5}
+---
+service: /spawn
+type: turtlesim/srv/Spawn
+request: {x: 2.0, y: 3.0, theta: 0.0, name: turtle2}
+---
+service: /clear
+type: turtlesim/srv/Clear
+request: {}
+response: {success: true}
+---
+service: /reset
+type: turtlesim/srv/Reset
+request: {}
+response: {success: true}
+---
+service: /get_loggers
+type: rcl_interfaces/srv/GetLoggers
+request: {}
+response: loggers: [{name: 'turtlesim'}, {name: 'ros'}]
+---
+service: /set_logger_level
+type: rcl_interfaces/srv/SetLoggerLevel
+request: {logger: 'turtlesim', level: 'DEBUG'}
+response: {success: true}
+---
+service: /parameter_events
+type: rosgraph_msgs/srv/GetParameters
+request: {names: ['use_sim_time']}
+response: {values: [{type: 1, bool_value: false}]}

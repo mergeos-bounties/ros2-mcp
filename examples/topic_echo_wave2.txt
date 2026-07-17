@@ -1,0 +1,31 @@
+---
+topic: /cmd_vel
+type: geometry_msgs/msg/Twist
+linear: {x: 0.2, y: 0.0, z: 0.0}
+angular: {x: 0.0, y: 0.0, z: 0.1}
+---
+topic: /scan
+type: sensor_msgs/msg/LaserScan
+ranges_len: 360
+angle_min: -2.356
+angle_max: 2.356
+angle_increment: 0.01
+---
+topic: /imu
+type: sensor_msgs/msg/Imu
+orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+angular_velocity: {x: 0.0, y: 0.0, z: 0.0}
+linear_acceleration: {x: 0.0, y: 0.0, z: 9.81}
+---
+topic: /joint_states
+type: sensor_msgs/msg/JointState
+name: ['joint_1', 'joint_2', 'joint_3']
+position: [0.1, -0.2, 0.3]
+velocity: [0.01, -0.02, 0.03]
+---
+topic: /battery_state
+type: sensor_msgs/msg/BatteryState
+voltage: 14.8
+percentage: 85.0
+status: 2
+current: -2.5
