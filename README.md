@@ -404,3 +404,7 @@ MIT · MergeOS / ThanhTrucSolutions
 
 ## Configuration
 See [MCP_HOST_CONFIG.md](docs/MCP_HOST_CONFIG.md) for Claude/Cursor setup.
+
+## IDE Configuration
+
+- [Cursor MCP Config](docs/CURSOR_MCP_CONFIG.md) — Copy-paste configuration for Cursor IDE with mock/live modes
