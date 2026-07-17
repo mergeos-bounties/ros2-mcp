@@ -1,0 +1,23 @@
+# Windows-specific paths for ros2-mcp
+
+## MCP Server Configuration
+When using ros2-mcp on Windows, the command and arguments remain the same:
+- Command: `ros2-mcp`
+- Args: [`serve`]
+
+## Environment Variables
+Set the ROS2_MCP_MODE environment variable:
+- For mock mode (default): `set ROS2_MCP_MODE=mock`
+- For live mode: `set ROS2_MCP_MODE=live`
+
+## Example Usage in PowerShell
+```powershell
+# Set environment for mock mode
+$env:ROS2_MCP_MODE = "mock"
+ros2-mcp serve
+```
+
+## Screenshots
+Refer to the screenshots in the `docs/screenshots/` directory:
+- `demo-graph.png`: Example topic graph
+- `demo-topics.png`: Example topic list
