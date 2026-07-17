@@ -1,0 +1,162 @@
+```diff
+@@ -1,6 +1,7 @@
+ """Offline mock ROS2 graph for AI tools without a ROS install."""
+
++import json
+ import math
+ import time
+ from copy import deepcopy
+ from typing import Any
+
+ from ros2_mcp.config import is_service_allowed, service_allowlist
+
+@@ -16,6 +17,7 @@ class MockBackend:
+         "/turtle1/cmd_vel": {
+             "type": "geometry_msgs/msg/Twist",
+             "publishers": ["/teleop_twist_keyboard"],
+             "subscribers": ["/turtlesim"],
+         },
+         "/turtle1/pose": {
+             "type": "turtlesim/msg/Pose",
+             "publishers": ["/turtlesim"],
+             "subscribers": ["/pose_logger"],
+         },
+         "/turtle1/color_sensor": {
+             "type": "turtlesim/msg/Color",
+             "publishers": ["/turtlesim"],
+             "subscribers": [],
+         },
+         "/clock": {
+             "type": "rosgraph_msgs/msg/Clock",
+             "publishers": ["/mock_clock"],
+             "subscribers": [],
+         },
+         "/scan": {
+             "type": "sensor_msgs/msg/LaserScan",
+             "publishers": ["/mock_lidar"],
+             "subscribers": ["/slam_toolbox"],
+         },
+         "/cmd_vel": {
+             "type": "geometry_msgs/msg/Twist",
+             "publishers": ["/nav2_controller"],
+             "subscribers": ["/diff_drive_controller"],
+         },
+         "/odom": {
+             "type": "nav_msgs/msg/Odometry",
+             "publishers": ["/diff_drive_controller"],
+             "subscribers": ["/ekf_node"],
+         },
+         "/tf": {
+             "type": "tf2_msgs/msg/TFMessage",
+             "publishers": ["/robot_state_publisher"],
+             "subscribers": [],
+         },
+     }
+     self._nodes = {
+         "/turtlesim": {
+             "publishers": ["/turtle1/pose", "/turtle1/color_sensor"],
+             "subscribers": ["/turtle1/cmd_vel"],
+             "services": ["/spawn", "/kill", "/clear", "/reset"],
+         },
+         "/teleop_twist_keyboard": {
+             "publishers": ["/turtle1/cmd_vel", "/cmd_vel"],
+             "subscribers": [],
+             "services": [],
+         },
+         "/mock_lidar": {
+             "publishers": ["/scan"],
+             "subscribers": [],
+             "services": [],
+         },
+         "/diff_drive_controller": {
+             "publishers": ["/odom"],
+             "subscribers": ["/cmd_vel"],
+             "services": [],
+         },
+         "/robot_state_publisher": {
+             "publishers": ["/tf"],
+             "subscribers": [],
+             "services": [],
+         },
+     }
+     self._services: dict[str, dict[str, Any]] = {
+         "/spawn": {"type": "turtlesim/srv/Spawn"},
+         "/kill": {"type": "turtlesim/srv/Kill"},
+         "/clear": {"type": "std_srvs/srv/Empty"},
+         "/reset": {"type": "std_srvs/srv/Empty"},
+         "/turtle1/set_pen": {"type": "turtlesim/srv/SetPen"},
+     }
+     self._params: dict[str, dict[str, Any]] = {
+         "/turtlesim": {
+             "background_r": 69,
+             "background_g": 86,
+             "background_b": 255,
+             "qos_overrides./parameter_events.publisher.depth": 1000,
+         },
+         "/diff_drive_controller": {
+             "wheel_separation": 0.3,
+             "wheel_radius": 0.05,
+             "publish_rate": 50.0,
+         },
+     }
+     # message buffers: topic -> list of {stamp, data}
+     self._buf: dict[str, list[dict[str, Any]]] = {t: [] for t in self._topics}
+     self._pose = {"x": 5.5, "y": 5.5, "theta": 0.0, "linear_velocity": 0.0, "angular_velocity": 0.0}
+     self._push(
+         "/turtle1/pose",
+         {"x": self._pose["x"], "y": self._pose["y"], "theta": self._pose["theta"]},
+     )
+     self._push(
+         "/scan",
+         {
+             "angle_min": -math.pi,
+             "angle_max": math.pi,
+             "ranges": [3.0 + 0.1 * math.sin(i) for i in range(36)],
+         },
+     )
+     return {"ok": True, "mode": "mock", "topics": list(self._topics), "nodes": list(self._nodes)}
+
+ def _seed_fleet(self) -> dict[str, Any]:
+     """Seed a 3-robot fleet graph: robot0/robot1/robot2 with cmd_vel + odom namespaces.
+
+     Each robot gets its own namespaced topics (/robotN/cmd_vel, /robotN/odom,
+     /robotN/scan, /robotN/tf), nodes, and diff-drive params. The three robots
+     differ by their diff-drive wheel_radius and grid offset (3 diffs).
+     """
+     self._topics = {}
+     self._nodes = {}
+     self._services = {}
+     self._params = {}
+     self._pose = {"x": 0.0, "y": 0.0, "theta": 0.0, "linear_velocity": 0.0, "angular_velocity": 0.0}
+     fleet_offsets = [(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]
+     for i in range(3):
+         r = f"robot{i}"
+         ox, oy = fleet_offsets[i]
+         self._topics[f"/{r}/cmd_vel"] = {
+             "type": "geometry_msgs/msg/Twist",
+             "publishers": [f"/{r}/controller"],
+             "subscribers": [f"/{r}/diff_drive"],
+         }
+         self._topics[f"/{r}/odom"] = {
+             "type": "nav_msgs/msg/Odometry",
+             "publishers": [f"/{r}/diff_drive"],
+             "subscribers": [f"/{r}/ekf"],
+         }
+         self._topics[f"/{r}/scan"] = {
+             "type": "sensor_msgs/msg/LaserScan",
+             "publishers": [f"/{r}/lidar"],
+             "subscribers": [f"/{r}/slam"],
+         }
+         self._topics[f"/{r}/tf"] = {
+             "type": "tf2_msgs/msg/TFMessage",
+             "publishers": [f"/{r}/robot_state_publisher"],
+             "subscribers": [],
+         }
+         self._nodes[f"/{r}/controller"] = {"publishers": [f"/{r}/cmd_vel"], "subscribers": [], "services": []}
+         self._nodes[f"/{r}/diff_drive"] = {"publishers": [f"/{r}/odom"], "subscribers": [f"/{r}/cmd_vel"], "services": []}
+         self._nodes[f"/{r}/lidar"] = {"publishers": [f"/{r}/scan"], "subscribers": [], "services": []}
+         self._nodes[f"/{r}/robot_state_publisher"] = {"publishers": [f"/{r}/tf"], "subscribers": [], "services": []}
+         self._params[f"/{r}/diff_drive"] = {
+             "wheel_separation": 0.3,
+             "wheel_radius": round(0.05 + i * 0.01, 2),  # 3 diffs: 0.05, 0.06, 0.07
+             "
