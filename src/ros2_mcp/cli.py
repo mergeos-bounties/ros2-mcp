@@ -62,6 +62,7 @@ def demo_cmd() -> None:
     rprint({"spawn": svc})
     rprint({"graph": b.graph_summary()})
     rprint({"tf": b.tf_tree()})
+    rprint({"tf_summary": b.tf_summary()})
     rprint({"actions": b.list_actions()})
     rprint(
         {
@@ -110,6 +111,7 @@ def tools_list() -> None:
             "ros2_set_param",
             "ros2_graph_summary",
             "ros2_tf_tree",
+            "ros2_tf_summary",
             "ros2_bag_info",
             "ros2_list_actions",
             "ros2_action_send_goal",
@@ -154,6 +156,7 @@ def call_cmd(
         "ros2_list_services": b.list_services,
         "ros2_graph_summary": b.graph_summary,
         "ros2_tf_tree": b.tf_tree,
+        "ros2_tf_summary": b.tf_summary,
         "ros2_bag_info": lambda: b.bag_info(kv.get("path")),
         "ros2_list_actions": b.list_actions,
         "ros2_action_send_goal": lambda: b.action_send_goal(

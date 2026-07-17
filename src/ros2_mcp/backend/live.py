@@ -256,6 +256,14 @@ class LiveBackend:
             "stderr": (err or e2)[:500],
         }
 
+    def tf_summary(self) -> dict[str, Any]:
+        return {
+            "ok": False,
+            "mode": "live",
+            "error": "structured TF summary is currently available in mock mode only",
+            "hint": "use ros2_tf_tree for best-effort live TF output",
+        }
+
     def bag_info(self, path: str | None = None) -> dict[str, Any]:
         if not path:
             return {"ok": False, "mode": "live", "error": "path is required for live ros2 bag info"}

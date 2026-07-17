@@ -457,6 +457,41 @@ class MockBackend:
             "ok": True,
         }
 
+    def tf_summary(self) -> dict[str, Any]:
+        """Summarize the mock TF graph for quick agent inspection."""
+        tree = self.tf_tree()
+        transforms = tree["frames"]
+        parents = {str(transform["parent"]) for transform in transforms}
+        children = {str(transform["child"]) for transform in transforms}
+        frames = parents | children
+        roots = sorted(parents - children)
+        leaves = sorted(children - parents)
+
+        adjacency: dict[str, list[str]] = {}
+        for transform in transforms:
+            adjacency.setdefault(str(transform["parent"]), []).append(str(transform["child"]))
+        stack = [(root, 0) for root in roots]
+        visited: set[str] = set()
+        max_depth = 0
+        while stack:
+            frame, depth = stack.pop()
+            if frame in visited:
+                continue
+            visited.add(frame)
+            max_depth = max(max_depth, depth)
+            stack.extend((child, depth + 1) for child in adjacency.get(frame, []))
+
+        return {
+            "ok": True,
+            "mode": "mock",
+            "frame_count": len(frames),
+            "transform_count": len(transforms),
+            "roots": roots,
+            "leaf_frames": leaves,
+            "max_depth": max_depth,
+            "frames": sorted(frames),
+        }
+
     def bag_info(self, path: str | None = None) -> dict[str, Any]:
         """Return deterministic rosbag metadata for offline agents."""
         bag_path = path or "mock://turtlesim-demo"

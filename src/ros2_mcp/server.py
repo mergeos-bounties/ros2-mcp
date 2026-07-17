@@ -237,6 +237,12 @@ def ros2_tf_tree() -> str:
 
 
 @mcp.tool()
+def ros2_tf_summary() -> str:
+    """Summarize mock TF frame count, roots, leaves, and maximum depth."""
+    return _j(get_backend().tf_summary())
+
+
+@mcp.tool()
 def ros2_bag_info(path: str | None = None) -> str:
     """Return rosbag metadata.
 
