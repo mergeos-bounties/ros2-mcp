@@ -1,0 +1,6 @@
+Subscribed to [/scan]
+average: 1.24MB/s
+  mean: 0.08s min: 0.06s max: 0.12s window: 50
+Subscribed to [/camera/image_raw]
+average: 12.50MB/s
+  mean: 0.033s min: 0.030s max: 0.040s window: 80
