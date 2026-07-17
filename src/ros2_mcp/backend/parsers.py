@@ -281,6 +281,67 @@ def parse_topic_list(raw: str) -> list[dict[str, str]]:
     return items
 
 
+def parse_topic_hz(raw: str, topic: str | None = None) -> dict[str, object]:
+    """Parse ``ros2 topic hz`` text into per-topic rate summaries."""
+    topics: list[dict[str, object]] = []
+    current: dict[str, object] = {}
+    pending_topic = topic or ""
+
+    def flush() -> None:
+        nonlocal current
+        if "average_rate_hz" not in current:
+            current = {}
+            return
+        current.setdefault("topic", pending_topic)
+        topics.append(current)
+        current = {}
+
+    for line in (raw or "").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+
+        topic_match = re.match(r"topic:\s*(\S+)", s, flags=re.I)
+        if topic_match:
+            name = topic_match.group(1)
+            if current:
+                current["topic"] = name
+                flush()
+            else:
+                pending_topic = name
+            continue
+
+        rate_match = re.match(r"average\s+rate:\s*([0-9.]+)", s, flags=re.I)
+        if rate_match:
+            if current:
+                flush()
+            current = {"topic": pending_topic, "average_rate_hz": float(rate_match.group(1))}
+            continue
+
+        stats_match = re.search(
+            r"min:\s*([0-9.]+)s\s+max:\s*([0-9.]+)s\s+std\s+dev:\s*([0-9.]+)s\s+window:\s*(\d+)",
+            s,
+            flags=re.I,
+        )
+        if stats_match and current:
+            current.update(
+                {
+                    "min_s": float(stats_match.group(1)),
+                    "max_s": float(stats_match.group(2)),
+                    "std_dev_s": float(stats_match.group(3)),
+                    "window": int(stats_match.group(4)),
+                }
+            )
+
+    if current:
+        flush()
+
+    if topic:
+        topics = [row for row in topics if row.get("topic") == topic]
+
+    return {"ok": bool(topics), "topic_count": len(topics), "topics": topics}
+
+
 def parse_tf_frames(raw: str) -> list[str]:
     """Parse loose ``tf2_echo`` / frame dump lines into frame ids (best-effort)."""
     frames: list[str] = []

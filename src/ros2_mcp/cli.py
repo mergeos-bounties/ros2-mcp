@@ -99,6 +99,7 @@ def tools_list() -> None:
             "ros2_list_topics",
             "ros2_topic_info",
             "ros2_topic_echo",
+            "ros2_topic_hz",
             "ros2_topic_pub",
             "ros2_list_nodes",
             "ros2_node_info",
@@ -164,6 +165,7 @@ def call_cmd(
         "ros2_topic_echo": lambda: b.topic_echo(
             str(kv.get("topic", "/turtle1/pose")), int(kv.get("count", 1))
         ),
+        "ros2_topic_hz": lambda: b.topic_hz(kv.get("topic")),
         "ros2_topic_pub": lambda: b.topic_pub(
             str(kv.get("topic", "/turtle1/cmd_vel")),
             str(kv.get("msg_type", "geometry_msgs/msg/Twist")),

@@ -103,6 +103,19 @@ class LiveBackend:
             msgs.append({"raw": o})
         return msgs
 
+    def topic_hz(self, topic: str | None = None) -> dict[str, Any]:
+        """Document live ``ros2 topic hz`` handling without streaming raw output."""
+        if not topic:
+            return {"ok": False, "mode": "live", "error": "topic is required for live topic hz"}
+        return {
+            "ok": False,
+            "mode": "live",
+            "topic": topic,
+            "redacted": True,
+            "error": "live ros2 topic hz is a streaming command and is not run from MCP",
+            "note": "Capture a short CLI sample manually if needed; redact host-specific data before sharing logs.",
+        }
+
     def topic_pub(
         self,
         topic: str,

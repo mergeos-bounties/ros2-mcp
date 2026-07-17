@@ -84,6 +84,15 @@ def test_call_with_json_file_merge_with_kv_args():
         Path(json_path).unlink()
 
 
+def test_call_topic_hz() -> None:
+    """Test ros2-mcp call exposes mock topic_hz parsing."""
+    result = runner.invoke(app, ["call", "topic_hz", "topic=/scan"])
+
+    assert result.exit_code == 0, f"CLI failed: {result.output}"
+    assert "average_rate_hz" in result.output
+    assert "/scan" in result.output
+
+
 def test_call_with_invalid_json_file():
     """Test error handling for non-existent --json-file."""
     result = runner.invoke(app, ["call", "list_topics", "--json-file", "/nonexistent.json"])

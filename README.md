@@ -122,6 +122,9 @@ Live parameter listing is redacted by default: `ros2_list_params` returns
 parameter names and `value: "<redacted-live-value>"` so MCP host transcripts
 and CI logs do not accidentally capture runtime configuration. Use
 `ros2_get_param` only when an explicit single live value read is intended.
+`ros2_topic_hz` is available for offline mock samples; in live mode it returns
+a bounded redaction note instead of starting the streaming `ros2 topic hz`
+command or echoing raw host output.
 
 ---
 
@@ -238,6 +241,7 @@ The entrypoint sources `/opt/ros/humble/setup.bash` before invoking
 | `ros2-mcp serve --verbose` | Same, plus structured JSON tool-call logs on **stderr** |
 | `ros2-mcp call …` | One-shot tool call (mock/live) |
 | `ros2-mcp tools list` | List MCP tools |
+| `ros2-mcp call topic_hz topic=/scan` | Parsed mock topic publish-rate sample |
 
 ```powershell
 # MCP for Cursor / Claude / Grok-compatible hosts
