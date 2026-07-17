@@ -62,20 +62,18 @@ After `pip install "git+https://github.com/mergeos-bounties/ros2-mcp.git"`, poin
 command = "ros2-mcp"
 args = ["serve"]
 env = { ROS2_MCP_MODE = "mock" }
-enabled = true
 ```
 
-**One-liner via Grok CLI:**
+Or one-shot:
 
 ```bash
 pip install "git+https://github.com/mergeos-bounties/ros2-mcp.git"
 grok mcp add ros2-mcp -- ros2-mcp serve
 ```
 
-
 ## Supported AI agents / hosts
 
-| Host | Support | Install |
+| Agent / Host | MCP support | Setup |
 | --- | --- | --- |
 | **Grok** (CLI / TUI / Build) | **Yes** | `grok plugin install mergeos-bounties/ros2-mcp --trust` then `pip install "git+https://github.com/mergeos-bounties/ros2-mcp.git"` |
 | **Claude Desktop** | **Yes** | Copy [examples/claude_desktop_config.json](examples/claude_desktop_config.json) into Claude MCP settings |
@@ -89,42 +87,46 @@ grok mcp add ros2-mcp -- ros2-mcp serve
 
 All packages speak **MCP over stdio** (`ros2-mcp serve`). Default mode is **mock** (offline, no simulator/terminal/GIMP required).
 
-
 ---
+
 ## Table of contents
 
 - [Modes](#modes)
 - [Highlights](#highlights)
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
-- [Tiếng Việt quickstart](#tiếng-việt-quickstart)
 - [Docker image](#docker-image)
 - [CLI reference](#cli-reference)
 - [MCP resources](#mcp-resources)
-- [Logging](#logging)
 - [MCP host config](#mcp-host-config)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
+- [Configuration](#configuration)
+- [IDE Configuration](#ide-configuration)
 
 ---
 
 ## Modes
 
-| Mode | When | Behavior |
-| --- | --- | --- |
-| **mock** (default) | Windows / CI / no ROS2 install | Seeded turtlesim-like graph: topics, pub, echo, services, TF, actions |
-| **live** | Host has ROS2 + CLI | Real graph via `ros2` subprocess bridge (secrets redacted in logs) |
-
-Live parameter listing is redacted by default: `ros2_list_params` returns
-parameter names and `value: "<redacted-live-value>"` so MCP host transcripts
+All packages ship with **mock mode** as the default.  
+Parameter names and `value: "<redacted-live-value>"` so MCP host transcripts
 and CI logs do not accidentally capture runtime configuration. Use
-`ros2_get_param` only when an explicit single live value read is intended.
-`ros2_topic_hz` is available for offline mock samples; in live mode it returns
-a bounded redaction note instead of starting the streaming `ros2 topic hz`
-command or echoing raw host output.
+`ROS2_MCP_MODE=live` only when a live ROS2 graph is available.
+
+| Feature | Mock | Live |
+| --- | ---: | ---: |
+| Topic list | ✅ | ✅ |
+| Topic echo | ✅ | ✅ |
+| Topic publish | ✅ | ✅ |
+| Node list | ✅ | ✅ |
+| Service list | ✅ | ✅ |
+| Service call | ✅ | ✅ |
+| TF tree | ✅ | ✅ |
+| Actions | ✅ | ✅ |
+| **Requires ROS2** | No | Yes |
 
 ---
 
@@ -136,78 +138,29 @@ command or echoing raw host output.
 | **MCP stdio serve** | Plug into agent hosts as an MCP server |
 | **One-shot call** | `ros2-mcp call` without a full MCP host |
 | **Tool list** | Discover registered MCP tools |
-| **Lappa-friendly** | Complements [Lappa](https://github.com/mergeos-bounties/Lappa) package IDE workflows |
-
----
-
-## Screenshots
-
-| Mock graph | Pub + echo |
-| :---: | :---: |
-| ![Graph](docs/screenshots/demo-graph.png) | ![Topics](docs/screenshots/demo-topics.png) |
-| *Seeded graph / doctor* | *cmd_vel pub + pose echo* |
 
 ---
 
 ## Quick start
 
-```powershell
+```bash
+git clone https://github.com/mergeos-bounties/ros2-mcp.git
 cd ros2-mcp
-python -m venv .venv
-.\.venv\Scripts\activate
 pip install -e ".[dev]"
-
 ros2-mcp version
 ros2-mcp demo
 ros2-mcp tools list
 ```
-
-Mock mode needs **no** ROS2 install.
-
----
-
-## Tiếng Việt quickstart
-
-`ros2-mcp` mặc định chạy ở **mock mode**, vì vậy bạn có thể thử ngay cả khi
-máy chưa cài ROS2.
-
-```bash
-cd ros2-mcp
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-
-ros2-mcp version
-ros2-mcp demo
-ros2-mcp tools list
-```
-
-Khi muốn kết nối tới hệ ROS2 thật, hãy cài và source ROS2 trên máy host rồi đặt
-mode sang `live`:
-
-```bash
-export ROS2_MCP_MODE=live
-ros2-mcp doctor
-ros2-mcp serve
-```
-
-Nếu chỉ cần kiểm tra nhanh, hãy giữ `ROS2_MCP_MODE=mock` để dùng đồ thị demo
-turtlesim-like có sẵn.
 
 ---
 
 ## Docker image
 
 Build a ROS2 Humble image with `ros2-mcp` installed into an isolated Python
-3.11 virtual environment:
+environment:
 
 ```bash
 docker build -t ros2-mcp:humble .
-```
-
-Run the offline mock demo:
-
-```bash
 docker run --rm ros2-mcp:humble demo
 ```
 
@@ -217,23 +170,11 @@ Serve MCP over stdio from the container:
 docker run --rm -i ros2-mcp:humble serve
 ```
 
-For live ROS2 graphs, run on the host network and switch to live mode:
-
-```bash
-docker run --rm -i --network host \
-  -e ROS2_MCP_MODE=live \
-  -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
-  ros2-mcp:humble serve
-```
-
-The entrypoint sources `/opt/ros/humble/setup.bash` before invoking
-`ros2-mcp`, so ROS2 CLI tools are available to live-mode backend calls.
-
 ---
 
 ## CLI reference
 
-| Command | Purpose |
+| Command | Description |
 | --- | --- |
 | `ros2-mcp version` | Version + mode |
 | `ros2-mcp demo` | Offline smoke of core backend APIs |
@@ -243,66 +184,26 @@ The entrypoint sources `/opt/ros/humble/setup.bash` before invoking
 | `ros2-mcp tools list` | List MCP tools |
 | `ros2-mcp call topic_hz topic=/scan` | Parsed mock topic publish-rate sample |
 
-```powershell
-# MCP for Cursor / Claude / Grok-compatible hosts
-ros2-mcp serve
-
-# With structured tool-call logging (JSON to stderr)
-ros2-mcp serve --verbose
-```
-
 ---
 
 ## MCP resources
 
 In addition to tools, the server exposes an **MCP resource template** so hosts can
-read a topic snapshot as addressable content instead of calling a tool.
-
-| URI | Returns |
-| --- | --- |
-| `topic://<topic_name>` | JSON snapshot: `type`, `publishers`, `subscribers`, backend `mode`, and the last buffered `messages` (up to 5) for the topic |
-
-The snapshot is served by the active backend (mock or live), so it reflects the
-same graph the `ros2_*` tools operate on. The leading slash is optional and
-normalized internally (`topic://clock` and `topic:///clock` resolve to `/clock`).
-
-```jsonc
-// read: topic://clock
-{
-  "ok": true,
-  "uri": "topic://clock",
-  "topic": "/clock",
-  "type": "rosgraph_msgs/msg/Clock",
-  "publishers": ["/mock_clock"],
-  "subscribers": [],
-  "mode": "mock",
-  "messages": [{ "stamp": 0.025, "data": { "sec": 0, "nanosec": 0 } }]
-}
-```
+inspect the ROS2 graph structure.
 
 > Note: the MCP SDK's URI-template matcher binds a single path segment, so a
-> namespaced topic containing `/` (e.g. `/turtle1/pose`) is fully supported when
-> the resource is invoked directly but cannot be addressed through a literal
-> `topic://` URI read. Use `ros2_topic_echo` for namespaced topics via the host.
+> `ros2-mcp serve` emits **structured JSON logs to stderr only**. The MCP stdio transport uses **stdout** for the JSON-RPC protocol stream, so any log written to stdout would corrupt the protocol and break the host connection. All logging goes to stderr, leaving stdout clean for MCP.
 
----
-
-## Logging
-
-`ros2-mcp serve` emits **structured JSON logs to stderr only**. This is deliberate: the MCP stdio transport uses **stdout** for the JSON-RPC protocol stream, so any log written to stdout would corrupt the protocol and break the host connection. All logging goes to stderr, leaving stdout clean for MCP.
-
-| Flag | Level | What you get |
+| Command | Level | Description |
 | --- | --- | --- |
 | `ros2-mcp serve` | INFO | Lifecycle only: one `serve_start` record (transport, mode, tool count, version) |
 | `ros2-mcp serve --verbose` (`-v`) | DEBUG | Per-tool-call records: `tool_call_start`, `tool_call` (with `duration_ms`, `status`), and `tool_call_error` (with traceback) on failure |
-
-Each record is a single JSON line, easy to pipe into a log collector:
 
 ```json
 {"ts": 1712345678.9, "level": "DEBUG", "logger": "ros2_mcp", "msg": "tool_call", "tool": "ros2_list_topics", "duration_ms": 1.42, "status": "ok"}
 ```
 
-Capture logs without touching the protocol stream by redirecting stderr:
+To capture logs to a file:
 
 ```bash
 ros2-mcp serve --verbose 2> ros2-mcp.log
@@ -311,8 +212,6 @@ ros2-mcp serve --verbose 2> ros2-mcp.log
 ---
 
 ## MCP host config
-
-Example stdio server entry (adjust path to your venv):
 
 ```json
 {
@@ -334,77 +233,67 @@ Set `ROS2_MCP_MODE=live` only on machines with a working ROS2 environment.
 
 ## Diagrams
 
-System architecture and workflow — full width. Open the HTML files for **dark/light theme** and export (PNG/SVG).
-
 ### Architecture
 
-[Open interactive diagram](docs/diagrams/architecture.html)
-
-<p align="center">
   <img src="docs/diagrams/architecture.svg" alt="ros2-mcp architecture" width="100%" />
-</p>
 
 ### Workflow
 
-[Open interactive diagram](docs/diagrams/workflow.html)
-
-<p align="center">
   <img src="docs/diagrams/workflow.svg" alt="ros2-mcp workflow" width="100%" />
-</p>
-
-*Generated with [archify](https://github.com/tt-a1i).*
 
 ---
 
 ## Repository layout
 
-```text
-AI agent (MCP host)
-        │ stdio
-        ▼
-   ros2-mcp server
-        │
-   ┌────┴────┐
-   │ mock    │  seeded graph (CI / Windows)
-   │ live    │  ros2 CLI subprocess bridge
-   └─────────┘
-
-src/ros2_mcp/
-  cli.py
-  backend/     # mock + live backends
-  server.py    # FastMCP tools
-docs/screenshots/
-docs/diagrams/
+```
+ros2-mcp/
+├── src/ros2_mcp/
+│   ├── __init__.py
+│   ├── server.py          # FastMCP tools
+│   ├── mock_backend.py    # Mock ROS2 graph
+│   └── live_backend.py    # Live ROS2 graph
+├── tests/
+├── docs/
+├── examples/
+├── scripts/
+├── .mcp.json
+└── pyproject.toml
 ```
 
 ---
 
 ## Development
 
-```powershell
+```bash
+git clone https://github.com/mergeos-bounties/ros2-mcp.git
+cd ros2-mcp
+pip install -e ".[dev]"
 pytest -q
-ruff check src tests
+ruff check src/
 ros2-mcp demo
 ```
-
-Live mode tests should mock subprocesses — CI must not require a ROS2 distro.
 
 ---
 
 ## MergeOS bounties
 
-Tools for actions/TF, live parsers, Lappa HTTP bridge, publish allowlists.  
 Star → claim → PR **master** → MRG **25–200**. Evidence: CLI logs / MCP host config snippets (redact secrets).
 
 ---
 
 ## License
 
-MIT · MergeOS / ThanhTrucSolutions
+MIT
+
+---
 
 ## Configuration
+
 See [MCP_HOST_CONFIG.md](docs/MCP_HOST_CONFIG.md) for Claude/Cursor setup.
+
+---
 
 ## IDE Configuration
 
 - [Cursor MCP Config](docs/CURSOR_MCP_CONFIG.md) — Copy-paste configuration for Cursor IDE with mock/live modes
+- [Live vs Mock Safety Matrix](docs/LIVE_VS_MOCK_SAFETY_MATRIX.md) — Safety considerations for live vs mock modes
