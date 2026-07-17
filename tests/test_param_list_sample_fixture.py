@@ -7,4 +7,4 @@ def test_param_list_sample_exists() -> None:
     text = p.read_text(encoding="utf-8")
     assert "/talker" in text
     assert "use_sim_time" in text
-    assert "/listener" in text
+    assert "/turtlesim" in text

@@ -1,7 +1,10 @@
-/talker:
+Node: /talker
   use_sim_time: false
-  qos_overrides./parameter_events.publisher.depth: 1000
-/listener:
+  qos_depth: 10
+Node: /listener
   use_sim_time: false
   history: keep_last
-  depth: 10
+Node: /turtlesim
+  background_r: 69
+  background_g: 86
+  background_b: 255
