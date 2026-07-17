@@ -1,4 +1,6 @@
-/add_two_ints
-/spawn_entity
-/controller_manager/list_controllers
-/robot_state_publisher/describe_parameters
+Services:
+  /add_two_ints [example_interfaces/srv/AddTwoInts]
+  /spawn [turtlesim/srv/Spawn]
+  /clear [std_srvs/srv/Empty]
+  /reset [std_srvs/srv/Empty]
+  /turtle1/set_pen [turtlesim/srv/SetPen]
