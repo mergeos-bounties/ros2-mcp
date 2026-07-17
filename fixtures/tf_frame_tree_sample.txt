@@ -1,0 +1,47 @@
+# TF Frame Tree Sample
+# Generated from: ros2 run tf2_tools view_frames
+# Date: 2026-07-17
+
+Frame: map
+  ├── Frame: odom
+  │   ├── Frame: base_link
+  │   │   ├── Frame: base_footprint
+  │   │   ├── Frame: laser_link
+  │   │   └── Frame: camera_link
+  │   │       └── Frame: camera_depth_frame
+  │   └── Frame: imu_link
+  └── Frame: map_lab
+
+Frame: odom
+  ├── Frame: base_link
+  │   ├── Frame: base_footprint
+  │   ├── Frame: laser_link
+  │   └── Frame: camera_link
+  │       └── Frame: camera_depth_frame
+  └── Frame: imu_link
+
+Frame: base_link
+  ├── Frame: base_footprint
+  ├── Frame: laser_link
+  └── Frame: camera_link
+      └── Frame: camera_depth_frame
+
+# TF Tree Statistics
+# Total frames: 8
+# Total transforms: 9
+# Root frame: map
+# Leaf frames: base_footprint, laser_link, camera_depth_frame, imu_link, map_lab
+
+# Transform Details
+# map -> odom: Translation (0.0, 0.0, 0.0), Rotation (0.0, 0.0, 0.0, 1.0)
+# odom -> base_link: Translation (1.0, 0.5, 0.0), Rotation (0.0, 0.0, 0.0, 1.0)
+# base_link -> base_footprint: Translation (0.0, 0.0, 0.1), Rotation (0.0, 0.0, 0.0, 1.0)
+# base_link -> laser_link: Translation (0.1, 0.0, 0.2), Rotation (0.0, 0.0, 0.0, 1.0)
+# base_link -> camera_link: Translation (0.2, 0.0, 0.3), Rotation (0.0, 0.0, 0.0, 1.0)
+# camera_link -> camera_depth_frame: Translation (0.0, 0.0, 0.05), Rotation (0.0, 0.0, 0.0, 1.0)
+# odom -> imu_link: Translation (0.0, 0.0, 0.3), Rotation (0.0, 0.0, 0.0, 1.0)
+# map -> map_lab: Translation (5.0, 3.0, 0.0), Rotation (0.0, 0.0, 0.0, 1.0)
+
+# Usage Example
+# ros2 topic echo /tf_static
+# ros2 run tf2_ros tf2_echo map base_link
