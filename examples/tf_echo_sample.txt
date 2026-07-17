@@ -1,0 +1,6 @@
+At time 1710000000.123
+- Translation: [0.120, -0.045, 0.980]
+- Rotation: in Quaternion [0.000, 0.000, 0.707, 0.707]
+At time 1710000000.223
+- Translation: [0.125, -0.040, 0.980]
+- Rotation: in Quaternion [0.000, 0.000, 0.709, 0.705]
