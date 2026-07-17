@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from ros2_mcp.backend.parsers import (
     parse_action_list,
     parse_interface_list,
@@ -24,6 +26,21 @@ def test_parse_service_list() -> None:
     assert items[0]["name"] == "/reset"
     assert items[0]["type"] == "std_srvs/srv/Empty"
     assert items[1]["name"] == "/spawn"
+
+
+def test_parse_service_list_sample_fixture() -> None:
+    raw = (Path(__file__).parent / "fixtures" / "service_list_sample.txt").read_text(
+        encoding="utf-8"
+    )
+
+    items = parse_service_list(raw)
+
+    assert items == [
+        {"name": "/clear", "type": "std_srvs/srv/Empty"},
+        {"name": "/spawn", "type": "turtlesim/srv/Spawn"},
+        {"name": "/turtle1/set_pen", "type": "turtlesim/srv/SetPen"},
+        {"name": "/parameter_events", "type": ""},
+    ]
 
 
 def test_parse_action_list() -> None:
