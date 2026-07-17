@@ -1,0 +1,59 @@
+# ROS2 Interface Show Sample
+# Generated from: ros2 interface show geometry_msgs/msg/Twist
+# Date: 2026-07-17
+
+# Message: geometry_msgs/msg/Twist
+# Description: This expresses velocity in free space broken into its linear and angular parts.
+
+Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+
+Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+
+---
+# Message: geometry_msgs/msg/Vector3
+# Description: A representation of 3D vector.
+
+float64 x
+float64 y
+float64 z
+
+---
+# Service: geometry_msgs/srv/TransformVector3
+# Description: Transform a Vector3 from one frame to another.
+
+# Request
+Vector3 input
+string target_frame
+
+# Response
+Vector3 output
+bool success
+
+---
+# Action: geometry_msgs/action/TransformPose
+# Description: Transform a Pose between frames.
+
+# Goal
+geometry_msgs/PoseStamped pose
+string target_frame
+
+# Result
+geometry_msgs/PoseStamped transformed_pose
+bool success
+string error_message
+
+# Feedback
+float32 progress
+string current_frame
+
+---
+# Constants
+float64 LINEAR_SPEED_LIMIT = 1.0
+float64 ANGULAR_SPEED_LIMIT = 1.0
+string DEFAULT_FRAME = "base_link"
