@@ -103,6 +103,7 @@ All packages speak **MCP over stdio** (`ros2-mcp serve`). Default mode is **mock
 - [MCP resources](#mcp-resources)
 - [Logging](#logging)
 - [MCP host config](#mcp-host-config)
+- [Live vs mock safety matrix](docs/MODE_SAFETY_MATRIX.md)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
@@ -122,6 +123,8 @@ Live parameter listing is redacted by default: `ros2_list_params` returns
 parameter names and `value: "<redacted-live-value>"` so MCP host transcripts
 and CI logs do not accidentally capture runtime configuration. Use
 `ros2_get_param` only when an explicit single live value read is intended.
+See the [live vs mock safety matrix](docs/MODE_SAFETY_MATRIX.md) for the full
+tool-by-tool live/mock requirements and redaction rules.
 
 ---
 
