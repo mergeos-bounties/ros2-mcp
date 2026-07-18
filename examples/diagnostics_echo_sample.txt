@@ -1,0 +1,13 @@
+﻿Subscribed to [/diagnostics]
+header:
+  stamp:
+    sec: 1710000000
+    nanosec: 123000000
+status:
+  - level: 0
+    name: 'battery'
+    message: 'OK'
+  - level: 1
+    name: 'cpu'
+    message: 'warm'
+---
