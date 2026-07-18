@@ -1,9 +1,15 @@
+Subscribed to [/chatter]
+data: 'hello world'
 ---
-topic: /cmd_vel
-type: geometry_msgs/msg/Twist
-linear: {x: 0.2, y: 0.0, z: 0.0}
-angular: {x: 0.0, y: 0.0, z: 0.1}
+data: 'hello world'
 ---
-topic: /scan
-type: sensor_msgs/msg/LaserScan
-ranges_len: 360
+Subscribed to [/cmd_vel]
+linear:
+  x: 0.2
+  y: 0.0
+  z: 0.0
+angular:
+  x: 0.0
+  y: 0.0
+  z: 0.1
+---
