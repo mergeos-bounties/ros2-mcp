@@ -1,9 +1,9 @@
 Messages:
-  geometry_msgs/msg/Twist
+  std_msgs/msg/String
   sensor_msgs/msg/LaserScan
-  nav_msgs/msg/Odometry
+  geometry_msgs/msg/Twist
 Services:
   std_srvs/srv/Empty
-  std_srvs/srv/Trigger
+  example_interfaces/srv/AddTwoInts
 Actions:
-  nav2_msgs/action/NavigateToPose
+  example_interfaces/action/Fibonacci
