@@ -106,6 +106,7 @@ All packages speak **MCP over stdio** (`ros2-mcp serve`). Default mode is **mock
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
+- [Host Setup](#host-setup)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
 
