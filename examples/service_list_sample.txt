@@ -1,6 +1,8 @@
 Services:
   /add_two_ints [example_interfaces/srv/AddTwoInts]
   /spawn [turtlesim/srv/Spawn]
+  /kill [turtlesim/srv/Kill]
   /clear [std_srvs/srv/Empty]
   /reset [std_srvs/srv/Empty]
   /turtle1/set_pen [turtlesim/srv/SetPen]
+  /turtle1/teleport_absolute [turtlesim/srv/TeleportAbsolute]
