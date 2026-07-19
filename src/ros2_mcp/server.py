@@ -10,6 +10,7 @@ from mcp.server.fastmcp import FastMCP
 from ros2_mcp import __version__
 from ros2_mcp.backend import get_backend, switch_mode
 from ros2_mcp.config import get_mode
+from ros2_mcp.lappa_bridge import lappa_cmd_vel, lappa_pose
 from ros2_mcp.logging_config import configure_logging, get_logger, log_tool_call
 
 mcp = FastMCP(
@@ -142,6 +143,34 @@ def ros2_topic_pub(
     if not isinstance(data, dict):
         return _j({"ok": False, "error": "data_json must be a JSON object"})
     return _j(get_backend().topic_pub(topic, msg_type, data, times=times))
+
+
+@mcp.tool()
+def ros2_lappa_pose(base_url: str | None = None) -> str:
+    """Read robot pose from a Lappa HTTP simulator bridge.
+
+    Args:
+        base_url: Optional Lappa server base URL. Defaults to ROS2_MCP_LAPPA_URL
+            or http://127.0.0.1:8765. When unavailable, returns mock pose data.
+    """
+    return _j(lappa_pose(base_url=base_url))
+
+
+@mcp.tool()
+def ros2_lappa_cmd_vel(
+    linear_x: float = 0.0,
+    angular_z: float = 0.0,
+    base_url: str | None = None,
+) -> str:
+    """Send cmd_vel to a Lappa HTTP simulator bridge.
+
+    Args:
+        linear_x: Forward velocity component.
+        angular_z: Yaw velocity component.
+        base_url: Optional Lappa server base URL. Defaults to ROS2_MCP_LAPPA_URL
+            or http://127.0.0.1:8765. When unavailable, returns mock-safe output.
+    """
+    return _j(lappa_cmd_vel(linear_x=linear_x, angular_z=angular_z, base_url=base_url))
 
 
 @mcp.tool()

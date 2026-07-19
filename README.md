@@ -97,6 +97,7 @@ All packages speak **MCP over stdio** (`ros2-mcp serve`). Default mode is **mock
 - [Quick start](#quick-start)
 - [Docker image](#docker-image)
 - [CLI reference](#cli-reference)
+- [Lappa HTTP bridge tools](#lappa-http-bridge-tools)
 - [MCP resources](#mcp-resources)
 - [MCP host config](#mcp-host-config)
 - [Diagrams](#diagrams)
@@ -183,6 +184,35 @@ docker run --rm -i ros2-mcp:humble serve
 | `ros2-mcp call …` | One-shot tool call (mock/live) |
 | `ros2-mcp tools list` | List MCP tools |
 | `ros2-mcp call topic_hz topic=/scan` | Parsed mock topic publish-rate sample |
+| `ros2-mcp call lappa_pose base_url=http://127.0.0.1:8765` | Read Lappa `/sim/pose` with mock-safe fallback |
+| `ros2-mcp call lappa_cmd_vel linear_x=0.3 angular_z=0.1` | Send Lappa `/sim/cmd_vel` with mock-safe fallback |
+
+---
+
+## Lappa HTTP bridge tools
+
+Issue #33 adds optional Lappa simulator HTTP bridge helpers while keeping the
+package safe for offline CI and MCP hosts. Configure a live bridge with:
+
+```bash
+export ROS2_MCP_LAPPA_URL=http://127.0.0.1:8765
+```
+
+Available tools:
+
+| Tool | HTTP path | Fallback |
+| --- | --- | --- |
+| `ros2_lappa_pose` | `GET /sim/pose` | returns deterministic mock pose when Lappa is down |
+| `ros2_lappa_cmd_vel` | `POST /sim/cmd_vel` | echoes a mock-safe cmd_vel + synthetic pose when Lappa is down |
+
+CLI examples:
+
+```bash
+ros2-mcp call lappa_pose
+ros2-mcp call lappa_cmd_vel linear_x=0.3 angular_z=0.1
+```
+
+Both commands avoid secrets and only use a local/user-configured base URL.
 
 ---
 
