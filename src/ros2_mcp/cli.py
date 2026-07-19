@@ -44,6 +44,41 @@ def demo_cmd() -> None:
     set_mode("mock")
     b = get_backend()
     b.seed_demo()
+    
+    # Print tool inventory table
+    table = Table(title="ros2-mcp Tool Inventory")
+    table.add_column("Tool")
+    table.add_column("Description")
+    
+    tools_list = [
+        ("ros2_mode", "Switch between mock and live mode"),
+        ("ros2_doctor", "Backend health check"),
+        ("ros2_seed_demo", "Seed mock graph with demo data"),
+        ("ros2_list_topics", "List available topics"),
+        ("ros2_topic_info", "Get topic information"),
+        ("ros2_topic_echo", "Echo messages from a topic"),
+        ("ros2_topic_hz", "Measure topic frequency"),
+        ("ros2_topic_pub", "Publish messages to a topic"),
+        ("ros2_list_nodes", "List active nodes"),
+        ("ros2_node_info", "Get node information"),
+        ("ros2_list_services", "List available services"),
+        ("ros2_service_call", "Call a service"),
+        ("ros2_list_params", "List node parameters"),
+        ("ros2_get_param", "Get parameter value"),
+        ("ros2_set_param", "Set parameter value"),
+        ("ros2_graph_summary", "Graph summary"),
+        ("ros2_tf_tree", "TF tree visualization"),
+        ("ros2_tf_summary", "TF summary"),
+        ("ros2_bag_info", "Bag file information"),
+        ("ros2_list_actions", "List available actions"),
+        ("ros2_action_send_goal", "Send action goal"),
+    ]
+    
+    for tool_name, description in tools_list:
+        table.add_row(tool_name, description)
+    
+    console.print(table)
+    
     rprint(b.doctor())
     topics = b.list_topics()
     rprint({"topics": len(topics), "sample": topics[:5]})
