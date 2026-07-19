@@ -219,3 +219,31 @@ def main() -> None:
 
 if __name__ == "__main__":
     app()
+
+# ---------------------------------------------------------------------------
+# New command: tf-tree
+# ---------------------------------------------------------------------------
+@app.command("tf-tree")
+def tf_tree_cmd() -> None:
+    """Print the TF tree in a human‑readable format.
+
+    The mock backend already provides a ``tf_tree`` method returning a dictionary
+    with ``root`` and a list of ``frames``. This command formats that data into a
+    simple tree view for quick inspection.
+    """
+    b = get_backend()
+    tree = b.tf_tree()
+    if not tree.get("ok"):
+        # If the backend could not produce a TF tree, forward the error payload.
+        rprint({"error": "Unable to retrieve TF tree", **tree})
+        return
+
+    # Header showing the root frame
+    rprint({"root": tree.get("root")})
+    # Each frame mapping: parent -> child with optional transform data.
+    for frame in tree.get("frames", []):
+        parent = frame.get("parent")
+        child = frame.get("child")
+        xyz = frame.get("xyz")
+        rpy = frame.get("rpy")
+        rprint({"link": f"{parent} -> {child}", "xyz": xyz, "rpy": rpy})
