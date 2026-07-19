@@ -11,6 +11,7 @@ from rich.table import Table
 from ros2_mcp import __version__
 from ros2_mcp.backend import get_backend, switch_mode
 from ros2_mcp.config import get_mode, set_mode
+from ros2_mcp.lappa_bridge import lappa_cmd_vel, lappa_pose
 
 app = typer.Typer(help="ros2-mcp — MCP server for ROS2", no_args_is_help=True)
 tools_app = typer.Typer(help="List / probe tools")
@@ -59,6 +60,8 @@ def demo_cmd() -> None:
         ("ros2_topic_echo", "Echo messages from a topic"),
         ("ros2_topic_hz", "Measure topic frequency"),
         ("ros2_topic_pub", "Publish messages to a topic"),
+        ("ros2_lappa_pose", "Read Lappa HTTP sim pose (mock-safe fallback)"),
+        ("ros2_lappa_cmd_vel", "Send Lappa HTTP sim cmd_vel (mock-safe fallback)"),
         ("ros2_list_nodes", "List active nodes"),
         ("ros2_node_info", "Get node information"),
         ("ros2_list_services", "List available services"),
@@ -137,6 +140,8 @@ def tools_list() -> None:
             "ros2_topic_echo",
             "ros2_topic_hz",
             "ros2_topic_pub",
+            "ros2_lappa_pose",
+            "ros2_lappa_cmd_vel",
             "ros2_list_nodes",
             "ros2_node_info",
             "ros2_list_services",
@@ -211,6 +216,14 @@ def call_cmd(
             if isinstance(kv.get("data"), dict)
             else {"linear": {"x": 0.2}, "angular": {"z": 0.1}},
             int(kv.get("times", 1)),
+        ),
+        "ros2_lappa_pose": lambda: lappa_pose(
+            kv.get("base_url") if isinstance(kv.get("base_url"), str) else None
+        ),
+        "ros2_lappa_cmd_vel": lambda: lappa_cmd_vel(
+            float(kv.get("linear_x", 0.0) or 0.0),
+            float(kv.get("angular_z", 0.0) or 0.0),
+            kv.get("base_url") if isinstance(kv.get("base_url"), str) else None,
         ),
         "ros2_node_info": lambda: b.node_info(str(kv.get("node", "/turtlesim"))),
         "ros2_service_call": lambda: b.service_call(
