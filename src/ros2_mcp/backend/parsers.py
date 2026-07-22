@@ -68,13 +68,82 @@ def parse_topic_info_verbose(raw: str, topic: str = "") -> dict[str, Any]:
             tq = re.match(r"Topic type:\s*(\S+)", line_s, flags=re.I)
             if tq:
                 current["type"] = tq.group(1)
+            # GID: 01.0f.00.00
+            gid_match = re.match(r"GID:\s*(\S+)", line_s, flags=re.I)
+            if gid_match:
+                current["gid"] = gid_match.group(1)
+            # QoS profile details
             if re.match(r"QoS profile:", line_s, flags=re.I):
                 current["qos"] = True
+
+    # Second pass for QoS details - parse indented blocks under QoS profile
+    lines = text.splitlines()
+    in_qos = False
+    qos_indent = 0
+    current_qos_target = None
+    
+    for i, line in enumerate(lines):
+        stripped = line.lstrip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        
+        # Check if we're entering a QoS profile section
+        if re.match(r"QoS profile:", stripped, flags=re.I):
+            in_qos = True
+            qos_indent = len(line) - len(stripped)
+            # Find which publisher/subscriber this QoS belongs to
+            # Look backwards for the most recent endpoint
+            for j in range(i-1, max(-1, i-20), -1):
+                prev_line = lines[j].lstrip()
+                if re.match(r"(Endpoint type:|Node name:|Node namespace:)", prev_line, flags=re.I):
+                    # Found the endpoint, determine if it's pub or sub
+                    # We'll associate with the last seen endpoint - this is approximate
+                    # For simplicity, we'll attach to the last publisher/subscription processed
+                    if out["publishers"]:
+                        current_qos_target = out["publishers"][-1]
+                    elif out["subscriptions"]:
+                        current_qos_target = out["subscriptions"][-1]
+                    break
+            continue
+        
+        if in_qos:
+            # Check if we're still in the QoS block (indented more than QoS profile line)
+            current_indent = len(line) - len(line.lstrip())
+            if current_indent <= qos_indent and stripped:
+                # We've exited the QoS block
+                in_qos = False
+                current_qos_target = None
+                # Continue processing this line normally
+            else:
+                # We're inside QoS block, parse key-value pairs
+                if current_qos_target is not None and ":" in stripped:
+                    key_val = stripped.split(":", 1)
+                    if len(key_val) == 2:
+                        key, val = key_val[0].strip().lower(), key_val[1].strip()
+                        # Store QoS info
+                        if "qos_details" not in current_qos_target:
+                            current_qos_target["qos_details"] = {}
+                        current_qos_target["qos_details"][key] = val
+                continue
+        
+        # Normal processing (outside QoS block)
+        if re.match(r"QoS profile:", line_s, flags=re.I):
+            # Already handled above
+            pass
+        # Other field parsing continues as before...
 
     if out["publisher_count"] is None:
         out["publisher_count"] = len(out["publishers"])
     if out["subscription_count"] is None:
         out["subscription_count"] = len(out["subscriptions"])
+
+    # Topic name line sometimes first
+    if not out["name"]:
+        m = re.search(r"Topic:\s*(\S+)", text, flags=re.I)
+        if m:
+            out["name"] = m.group(1)
+
+    return out
 
     # Topic name line sometimes first
     if not out["name"]:
