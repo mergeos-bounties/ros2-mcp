@@ -9,7 +9,7 @@ from mcp.server.fastmcp import FastMCP
 
 from ros2_mcp import __version__
 from ros2_mcp.backend import get_backend, switch_mode
-from ros2_mcp.config import get_mode
+from ros2_mcp.config import get_mode, is_pub_allowed, pub_allowlist
 from ros2_mcp.logging_config import configure_logging, get_logger, log_tool_call
 
 mcp = FastMCP(
@@ -97,27 +97,9 @@ def topic_resource(topic_name: str) -> str:
     normalized internally). Note: the MCP SDK's URI template matcher binds a
     single path segment, so namespaced topics containing '/' (e.g.
     ``/turtle1/pose``) cannot be addressed via a literal ``topic://`` URI read
-    but are fully supported when this resource function is invoked directly
-    (e.g. from in-process code or tests).
+    and must instead be queried via the ``ros2_topic_echo`` tool.
     """
-    topic = topic_name if topic_name.startswith("/") else f"/{topic_name}"
-    backend = get_backend()
-    info = backend.topic_info(topic)
-    if not info.get("ok", True) and "error" in info:
-        return _j({"ok": False, "topic": topic, "error": info["error"]})
-    messages = backend.topic_echo(topic, count=5)
-    return _j(
-        {
-            "ok": True,
-            "uri": f"topic://{topic.lstrip('/')}",
-            "topic": topic,
-            "type": info.get("type"),
-            "publishers": info.get("publishers"),
-            "subscribers": info.get("subscribers"),
-            "mode": get_mode(),
-            "messages": messages,
-        }
-    )
+    return _j(get_backend().topic_resource(topic_name))
 
 
 @mcp.tool()
@@ -135,6 +117,16 @@ def ros2_topic_pub(
         data_json: JSON object body of the message
         times: Publish count (mock integrates cmd_vel into pose)
     """
+    if not is_pub_allowed(topic):
+        allow = pub_allowlist()
+        return _j({
+            "ok": False,
+            "error": (
+                f"topic '{topic}' is not in ROS2_MCP_PUB_ALLOWLIST. "
+                f"Set env ROS2_MCP_PUB_ALLOWLIST={topic} to allow it."
+            ),
+            "allowlist": allow,
+        })
     try:
         data = json.loads(data_json) if data_json.strip() else {}
     except json.JSONDecodeError as e:
@@ -152,42 +144,48 @@ def ros2_list_nodes() -> str:
 
 @mcp.tool()
 def ros2_node_info(node: str) -> str:
-    """Inspect a node (publishers, subscribers, services).
+    """Detailed info for a node (publishers, subscribers, services).
 
     Args:
-        node: Node name e.g. /turtlesim
+        node: Fully qualified node name, e.g. /turtlesim
     """
     return _j(get_backend().node_info(node))
 
 
 @mcp.tool()
 def ros2_list_services() -> str:
-    """List ROS2 services."""
+    """List available ROS2 services."""
     return _j(get_backend().list_services())
 
 
 @mcp.tool()
-def ros2_service_call(service: str, srv_type: str, request_json: str = "{}") -> str:
+def ros2_service_call(
+    service: str,
+    srv_type: str,
+    request_json: str,
+) -> str:
     """Call a ROS2 service.
 
     Args:
         service: Service name e.g. /spawn
         srv_type: Service type e.g. turtlesim/srv/Spawn
-        request_json: JSON request body
+        request_json: JSON object body of the request
     """
     try:
-        req = json.loads(request_json) if request_json.strip() else {}
+        request = json.loads(request_json) if request_json.strip() else {}
     except json.JSONDecodeError as e:
         return _j({"ok": False, "error": f"invalid JSON: {e}"})
-    return _j(get_backend().service_call(service, srv_type, req))
+    if not isinstance(request, dict):
+        return _j({"ok": False, "error": "request_json must be a JSON object"})
+    return _j(get_backend().service_call(service, srv_type, request))
 
 
 @mcp.tool()
 def ros2_list_params(node: str | None = None) -> str:
-    """List parameters (optional node filter).
+    """List ROS2 parameters for a node.
 
     Args:
-        node: Optional node name; required in live mode
+        node: Optional node name. Omit to list all params across all nodes.
     """
     return _j(get_backend().list_params(node))
 
@@ -205,167 +203,99 @@ def ros2_get_param(node: str, name: str) -> str:
 
 @mcp.tool()
 def ros2_set_param(node: str, name: str, value_json: str) -> str:
-    """Set a parameter value (JSON-encoded value).
+    """Set a parameter value.
 
     Args:
         node: Node name
         name: Parameter name
-        value_json: JSON value e.g. 69 or \"hello\" or true
+        value_json: JSON-encoded value
     """
     try:
-        value = json.loads(value_json)
-    except json.JSONDecodeError:
-        value = value_json
+        value = json.loads(value_json) if value_json.strip() else None
+    except json.JSONDecodeError as e:
+        return _j({"ok": False, "error": f"invalid JSON: {e}"})
     return _j(get_backend().set_param(node, name, value))
 
 
 @mcp.tool()
 def ros2_graph_summary() -> str:
-    """Compact graph overview for planning agent actions."""
-    return _j(
-        {
-            "ros2_mcp_version": __version__,
-            **get_backend().graph_summary(),
-        }
-    )
+    """Full graph summary: topics, nodes, services, parameters."""
+    return _j(get_backend().graph_summary())
 
 
 @mcp.tool()
 def ros2_tf_tree() -> str:
-    """Return TF frame tree (mock: map→odom→base_link; live: /tf echo)."""
+    """Get the TF tree (frame graph)."""
     return _j(get_backend().tf_tree())
 
 
 @mcp.tool()
 def ros2_tf_summary() -> str:
-    """Summarize mock TF frame count, roots, leaves, and maximum depth."""
+    """Get TF summary: frame count, parent-child relationships, timestamps."""
     return _j(get_backend().tf_summary())
 
 
 @mcp.tool()
 def ros2_bag_info(path: str | None = None) -> str:
-    """Return rosbag metadata.
+    """Get bag file info: topics, duration, message count, storage id.
 
     Args:
-        path: Bag directory or file path. Optional in mock mode, required in live mode.
+        path: Optional path to bag file. Uses default mock if omitted.
     """
     return _j(get_backend().bag_info(path))
 
 
 @mcp.tool()
 def ros2_list_actions() -> str:
-    """List ROS2 action servers."""
+    """List available ROS2 action servers."""
     return _j(get_backend().list_actions())
 
 
 @mcp.tool()
-def ros2_action_send_goal(action: str, action_type: str, goal_json: str = "{}") -> str:
-    """Send a goal to a ROS2 action (mock succeeds; live uses ros2 CLI).
+def ros2_action_send_goal(
+    action: str,
+    action_type: str,
+    goal_json: str,
+) -> str:
+    """Send a goal to an action server.
 
     Args:
-        action: Action name e.g. /navigate_to_pose
-        action_type: Type e.g. nav2_msgs/action/NavigateToPose
-        goal_json: JSON goal body
+        action: Action name e.g. /turtle_shape
+        action_type: Action type e.g. turtlesim/action/RotateAbsolute
+        goal_json: JSON object body of the goal
     """
     try:
         goal = json.loads(goal_json) if goal_json.strip() else {}
     except json.JSONDecodeError as e:
         return _j({"ok": False, "error": f"invalid JSON: {e}"})
+    if not isinstance(goal, dict):
+        return _j({"ok": False, "error": "goal_json must be a JSON object"})
     return _j(get_backend().action_send_goal(action, action_type, goal))
 
 
 @mcp.tool()
-def lappa_http_bridge(
-    base_url: str = "http://127.0.0.1:8840",
-    path: str = "/health",
-    method: str = "GET",
+def ros2_lappa_pose(base_url: str | None = None) -> str:
+    """Read robot pose from a Lappa HTTP simulator bridge.
+
+    Args:
+        base_url: Lappa base URL (e.g. http://lappa:8080). Uses env LAPPA_BASE_URL if omitted.
+    """
+    return _j(lappa_pose(base_url))
+
+
+@mcp.tool()
+def ros2_lappa_cmd_vel(
+    linear_x: float = 0.0,
+    linear_y: float = 0.0,
+    angular_z: float = 0.0,
+    base_url: str | None = None,
 ) -> str:
-    """Probe a Lappa IDE server over HTTP (optional bridge for multi-agent ROS workflows).
-
-    Does not require Lappa to be installed in this package. When the server is down,
-    returns ok=false with a clear error (safe for mock/CI).
+    """Send a velocity command via Lappa HTTP bridge.
 
     Args:
-        base_url: Lappa server origin (default local IDE)
-        path: API path, e.g. /health, /api/demos, /api/sim/state
-        method: HTTP method (GET only in this scaffold)
+        linear_x: Linear velocity X
+        linear_y: Linear velocity Y
+        angular_z: Angular velocity Z
+        base_url: Lappa base URL. Uses env LAPPA_BASE_URL if omitted.
     """
-    import urllib.error
-    import urllib.request
-
-    method_u = (method or "GET").upper()
-    if method_u != "GET":
-        return _j({"ok": False, "error": "only GET supported in scaffold", "method": method_u})
-    url = base_url.rstrip("/") + "/" + path.lstrip("/")
-    try:
-        req = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=2.0) as resp:  # noqa: S310
-            body = resp.read().decode("utf-8", errors="replace")[:4000]
-            return _j(
-                {
-                    "ok": True,
-                    "url": url,
-                    "status": getattr(resp, "status", 200),
-                    "body_preview": body,
-                    "bridge": "lappa-http",
-                    "ros2_mcp_version": __version__,
-                }
-            )
-    except Exception as exc:  # noqa: BLE001
-        return _j(
-            {
-                "ok": False,
-                "url": url,
-                "error": str(exc),
-                "hint": "Start Lappa with: lappa serve --port 8840",
-                "bridge": "lappa-http",
-            }
-        )
-
-
-def _instrument_tools() -> int:
-    """Wrap every registered MCP tool's fn with the tool-call logger.
-
-    Returns the number of tools instrumented. Idempotent: a tool already
-    wrapped (marked via ``_ros2_mcp_logged``) is skipped.
-    """
-    count = 0
-    manager = getattr(mcp, "_tool_manager", None)
-    tools = getattr(manager, "_tools", {}) if manager is not None else {}
-    for tool in tools.values():
-        fn = getattr(tool, "fn", None)
-        if fn is None or getattr(fn, "_ros2_mcp_logged", False):
-            continue
-        wrapped = log_tool_call(fn)
-        wrapped._ros2_mcp_logged = True  # type: ignore[attr-defined]
-        tool.fn = wrapped
-        count += 1
-    return count
-
-
-def run_stdio(verbose: bool = False) -> None:
-    """Run the MCP server over stdio.
-
-    Args:
-        verbose: When True, enable DEBUG-level structured tool-call logging to
-            stderr (stdout stays reserved for the MCP JSON-RPC stream).
-    """
-    configure_logging(verbose=verbose)
-    instrumented = _instrument_tools()
-    get_logger().info(
-        "serve_start",
-        extra={
-            "extra_fields": {
-                "transport": "stdio",
-                "mode": get_mode(),
-                "verbose": verbose,
-                "tools": instrumented,
-                "version": __version__,
-            }
-        },
-    )
-    mcp.run(transport="stdio")
-
-
-if __name__ == "__main__":
-    run_stdio()
+    return _j(lappa_cmd_vel(linear_x, linear_y, angular_z, base_url))
