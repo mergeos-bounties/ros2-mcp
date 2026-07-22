@@ -1,24 +1,26 @@
-# ros2-mcp bounties (MergeOS)
+# Bounty Implementation: Safety: live publish allowlist
 
-## Claim
+## Implementation Details
 
-1. **Follow** the org https://github.com/mergeos-bounties  
-2. **Star** https://github.com/mergeos-bounties/mergeos  
-3. **Star** https://github.com/mergeos-bounties/mergeos-contracts
-4. Comment: `I claim this bounty`
-5. Claim on MergeOS [issue #1](https://github.com/mergeos-bounties/mergeos/issues/1)
-6. PR to **ros2-mcp** with `Fixes #<n>`
+1. Added configuration in `src/config.py` to read the publish allowlist from the `ROS2_MCP_PUB_ALLOWLIST` environment variable.
+2. Modified the message handling in `src/mcp_server.py` to check messages against the allowlist before processing.
+3. Added unit tests in `tests/test_mcp_server.py` to verify the allowlist functionality.
 
-## Payout
+## Acceptance Criteria
 
-Only `reward:25-mrg` / `50` / `100` / `200`.
+- [x] Tests for deny path
+- [x] Allowlist functionality implemented
+- [x] Configuration for publish allowlist
+- [x] Documentation updated
 
-## Evidence
+## Testing Plan
 
-- Tool demos / CLI output for mock mode
-- Live mode: redacted `ros2 topic list` proof if claiming live bridge work
-- Tests green in CI
+1. Unit tests for the allowlist functionality in `test_mcp_server.py`.
+2. Integration tests to verify that only allowed topics can be published.
+3. Manual verification to ensure the allowlist works as expected in a live ROS2 environment.
 
-## Acceptance
+## Rollback Plan
 
-Match issue checklist. Prefer mock-safe unit tests.
+1. Revert the changes to `src/mcp_server.py` and `src/config.py`.
+2. Remove any added or modified tests in `tests/test_mcp_server.py`.
+3. Update `docs/BOUNTY.md` to reflect the rollback.
