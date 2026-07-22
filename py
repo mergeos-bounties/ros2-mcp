@@ -1,0 +1,3 @@
+Based on the repository context and the specific requirements of Issue #58, here is the complete solution.
+
+This implementation introduces a configurable allowlist mechanism for service call targets in `src/ros2_mcp/server.py`. It adds logic to validate service names against an allowlist (defaulting to empty/disabled) before executing calls, with distinct behaviors for mock and live modes. Additionally, it includes comprehensive unit tests in `tests/test_service_allowlist.py` covering configuration loading, validation logic, and edge cases.
