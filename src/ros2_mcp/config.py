@@ -25,12 +25,34 @@ def domain_id() -> str:
     return os.environ.get("ROS2_MCP_DOMAIN_ID") or os.environ.get("ROS_DOMAIN_ID") or "0"
 
 
+def _read_allowlist_file(file_path: str) -> list[str] | None:
+    if not file_path or not os.path.isfile(file_path):
+        return None
+    try:
+        with open(file_path, encoding="utf-8") as f:
+            content = f.read()
+        items = []
+        for line in content.splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                items.extend([p.strip() for p in line.split(",") if p.strip()])
+        return items if items else None
+    except OSError:
+        return None
+
+
 def pub_allowlist() -> list[str] | None:
-    """Optional live-mode publish allowlist.
+    """Optional publish allowlist for mock and live modes.
 
     Env ``ROS2_MCP_PUB_ALLOWLIST=/cmd_vel,/turtle1/cmd_vel`` (comma-separated).
+    Or env ``ROS2_MCP_PUB_ALLOWLIST_FILE=/path/to/allowlist.txt`` (one item per line or comma-separated).
     Empty / unset → all topics allowed.
     """
+    file_path = (os.environ.get("ROS2_MCP_PUB_ALLOWLIST_FILE") or "").strip()
+    from_file = _read_allowlist_file(file_path)
+    if from_file is not None:
+        return from_file
+
     raw = (os.environ.get("ROS2_MCP_PUB_ALLOWLIST") or "").strip()
     if not raw:
         return None
@@ -41,8 +63,14 @@ def service_allowlist() -> list[str] | None:
     """Optional service-call allowlist for mock and live modes.
 
     Env ``ROS2_MCP_SERVICE_ALLOWLIST=/spawn,/clear`` (comma-separated).
+    Or env ``ROS2_MCP_SERVICE_ALLOWLIST_FILE=/path/to/allowlist.txt`` (one item per line or comma-separated).
     Empty / unset → all services allowed.
     """
+    file_path = (os.environ.get("ROS2_MCP_SERVICE_ALLOWLIST_FILE") or "").strip()
+    from_file = _read_allowlist_file(file_path)
+    if from_file is not None:
+        return from_file
+
     raw = (os.environ.get("ROS2_MCP_SERVICE_ALLOWLIST") or "").strip()
     if not raw:
         return None
