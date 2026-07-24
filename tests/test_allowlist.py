@@ -48,3 +48,32 @@ def test_service_allowlist_blocks_live_before_ros2_call(monkeypatch):
     assert blocked["ok"] is False
     assert "ROS2_MCP_SERVICE_ALLOWLIST" in blocked["error"]
     assert blocked["allowlist"] == ["/spawn"]
+
+
+def test_pub_allowlist_mock_blocks(monkeypatch):
+    monkeypatch.setenv("ROS2_MCP_PUB_ALLOWLIST", "/turtle1/cmd_vel")
+    mock = MockBackend()
+    blocked = mock.topic_pub("/forbidden_topic", "std_msgs/msg/String", {"data": "x"})
+    assert blocked["ok"] is False
+    assert "ROS2_MCP_PUB_ALLOWLIST" in blocked["error"]
+
+    allowed = mock.topic_pub("/turtle1/cmd_vel", "geometry_msgs/msg/Twist", {"linear": {"x": 1.0}})
+    assert allowed.get("ok") is not False
+
+
+def test_pub_allowlist_file(tmp_path, monkeypatch):
+    allow_file = tmp_path / "pub_allowlist.txt"
+    allow_file.write_text("# Comment line\n/turtle1/cmd_vel\n/robot_1/cmd_vel\n")
+    monkeypatch.setenv("ROS2_MCP_PUB_ALLOWLIST_FILE", str(allow_file))
+    assert pub_allowlist() == ["/turtle1/cmd_vel", "/robot_1/cmd_vel"]
+    assert is_pub_allowed("/turtle1/cmd_vel") is True
+    assert is_pub_allowed("/unauthorized") is False
+
+
+def test_service_allowlist_file(tmp_path, monkeypatch):
+    allow_file = tmp_path / "service_allowlist.txt"
+    allow_file.write_text("/spawn, /clear\n# comment\n/reset\n")
+    monkeypatch.setenv("ROS2_MCP_SERVICE_ALLOWLIST_FILE", str(allow_file))
+    assert service_allowlist() == ["/spawn", "/clear", "/reset"]
+    assert is_service_allowed("/spawn") is True
+    assert is_service_allowed("/kill") is False
