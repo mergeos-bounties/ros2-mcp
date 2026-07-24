@@ -7,7 +7,7 @@ import time
 from copy import deepcopy
 from typing import Any
 
-from ros2_mcp.config import is_service_allowed, service_allowlist
+from ros2_mcp.config import is_pub_allowed, is_service_allowed, pub_allowlist, service_allowlist
 
 
 class MockBackend:
@@ -326,6 +326,12 @@ class MockBackend:
         data: dict[str, Any],
         times: int = 1,
     ) -> dict[str, Any]:
+        if not is_pub_allowed(topic):
+            return {
+                "ok": False,
+                "error": f"topic {topic} not in ROS2_MCP_PUB_ALLOWLIST",
+                "allowlist": pub_allowlist(),
+            }
         if topic not in self._topics:
             self._topics[topic] = {
                 "type": msg_type,
